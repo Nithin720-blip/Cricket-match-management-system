@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Matches | Elite Cricket Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #4a4e69;
+            --secondary-green: #6d6875;
+            --accent-gold: #fb8500;
+            --background-dark: #1a1a2e;
+            --form-bg: rgba(255, 255, 255, 0.05);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --text-light: #e0e0e0;
+            --text-muted: #b0b0b0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --table-header-bg: rgba(255, 255, 255, 0.08);
+            --table-row-hover: rgba(255, 255, 255, 0.05);
+            --action-delete: #d9534f;
+            --button-primary-bg: linear-gradient(90deg, #2ecc71, #27ae60);
+            --button-primary-hover: linear-gradient(90deg, #27ae60, #2ecc71);
+            --button-edit-bg: linear-gradient(90deg, #007bff, #0056b3);
+            --button-edit-hover: linear-gradient(90deg, #0056b3, #007bff);
+
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            --shadow-strong: rgba(0, 0, 0, 0.4);
+
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, var(--background-dark) 0%, #0e0e1a 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px var(--shadow-strong);
+            margin-bottom: 40px;
+        }
+
+        .main-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            position: relative;
+            width: 100%;
+        }
+
+        .back-button-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .back-link {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-light);
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px var(--shadow-light);
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--shadow-strong);
+        }
+
+        .back-link i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover i {
+            transform: translateX(-3px);
+        }
+
+        .main-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #a8edea, #fed6e3, #ffd19a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 0;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .card {
+            background: var(--form-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 15px var(--shadow-light);
+            padding: 25px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px var(--shadow-strong);
+        }
+
+        .card h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(251, 133, 0, 0.5);
+            display: inline-block;
+            text-align: center;
+            width: auto;
+        }
+
+        .add-entry-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 1em;
+            color: var(--text-light);
+            background-color: var(--input-bg);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(251, 133, 0, 0.3);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-control option {
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            padding: 5px 10px;
+        }
+
+        .form-label {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            transition: all 0.3s ease;
+            background: transparent;
+            padding: 0;
+            z-index: 1;
+        }
+
+        .form-group select {
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23e0e0e0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 35px;
+        }
+
+        .form-control:not(:placeholder-shown) + .form-label,
+        .form-control:focus + .form-label,
+        .form-control:valid + .form-label {
+            top: -10px;
+            font-size: 0.75em;
+            color: var(--accent-gold);
+            background: var(--form-bg);
+            padding: 0 5px;
+            left: 10px;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .btn i {
+            font-size: 1.1em;
+        }
+
+        .btn-primary {
+            background: var(--button-primary-bg);
+            color: white;
+            grid-column: span 1;
+        }
+        .add-entry-form button[type="submit"] {
+            grid-column: 1 / -1;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background: var(--button-primary-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-danger {
+            background-color: var(--action-delete);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-edit {
+            background: var(--button-edit-bg);
+            color: white;
+        }
+        .btn-edit:hover {
+            background: var(--button-edit-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            background: var(--form-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px var(--shadow-light);
+            min-width: 700px;
+        }
+
+        .data-table thead {
+            background-color: var(--primary-blue);
+            color: var(--text-light);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .data-table th {
+            font-weight: 600;
+            font-size: 1.05em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: var(--primary-blue);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .data-table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 0 2px var(--accent-gold);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table .actions {
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: flex-start;
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 30px;
+            font-size: 1.1em;
+            color: var(--text-muted);
+            background-color: var(--form-bg);
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: fadeInDown 0.5s ease-out forwards;
+        }
+
+        .message.success {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .message.error {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                padding: 25px;
+            }
+            .main-header h1 {
+                font-size: 3rem;
+            }
+            .card h2 {
+                font-size: 2rem;
+            }
+            .add-entry-form {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            .data-table th, .data-table td {
+                padding: 12px 15px;
+                font-size: 0.95em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+            .container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+            .main-header h1 {
+                font-size: 2.5rem;
+            }
+            .back-button-container {
+                position: static;
+                margin-bottom: 20px;
+                display: block;
+                text-align: left;
+            }
+            .back-link {
+                width: auto;
+                font-size: 0.85rem;
+                padding: 8px 15px;
+            }
+            .card {
+                padding: 20px;
+            }
+            .card h2 {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+            .add-entry-form {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .btn {
+                padding: 12px 20px;
+                font-size: 1.1rem;
+            }
+
+            .data-table,
+            .data-table thead,
+            .data-table tbody,
+            .data-table th,
+            .data-table td,
+            .data-table tr {
+                display: block;
+            }
+
+            .data-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            .data-table tr {
+                border: 1px solid var(--border-color);
+                margin-bottom: 15px;
+                border-radius: 8px;
+                background-color: var(--form-bg);
+            }
+
+            .data-table td {
+                border-bottom: 1px solid var(--border-color);
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+
+            .data-table td:last-child {
+                border-bottom: none;
+            }
+
+            .data-table td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 15px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: 600;
+                color: var(--text-light);
+            }
+            .data-table td:nth-of-type(1):before { content: "ID"; }
+            .data-table td:nth-of-type(2):before { content: "Team 1"; }
+            .data-table td:nth-of-type(3):before { content: "Team 2"; }
+            .data-table td:nth-of-type(4):before { content: "Venue"; }
+            .data-table td:nth-of-type(5):before { content: "Date"; }
+            .data-table td:nth-of-type(6):before { content: "Action"; }
+
+            .data-table .actions {
+                text-align: center;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-header h1 {
+                font-size: 2em;
+            }
+            .card h2 {
+                font-size: 1.5em;
+            }
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+            .data-table td {
+                padding: 10px 10px 10px 45%;
+            }
+            .data-table td:before {
+                left: 10px;
+                width: 40%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <div class="back-button-container">
+                <a href="/admin/dashboard" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            <h1>Schedule Matches</h1>
+        </header>
+
+        {% if message %}
+            <div class="message {{ message.type }}" id="notification">
+                {{ message.text }}
+            </div>
+            <script>
+                setTimeout(() => {
+                    const notification = document.getElementById('notification');
+                    if (notification) {
+                        notification.style.opacity = '0';
+                        notification.style.transform = 'translateY(-20px)';
+                        setTimeout(() => notification.remove(), 500);
+                    }
+                }, 5000);
+            </script>
+        {% endif %}
+
+        <section class="card add-match-section">
+            <h2>{% if edit_match_data %}Edit Match{% else %}Add New Match{% endif %}</h2>
+            <form method="POST" action="/admin/manage_matches" class="add-entry-form">
+                <input type="hidden" name="submit_form" value="1">
+                {% if edit_match_data %}
+                    <input type="hidden" name="match_id" value="{{ edit_match_data.match_id }}">
+                {% endif %}
+
+                <div class="form-group">
+                    <select name="team1_id" id="team1_id" class="form-control" required>
+                        <option value="" disabled {% if not edit_match_data %}selected{% endif %}>Select Team 1</option>
+                        {% for team in teams %}
+                            <option value="{{ team.team_id }}" {% if edit_match_data and edit_match_data.team1_id == team.team_id %}selected{% endif %}>{{ team.team_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="team1_id" class="form-label">Team 1</label>
+                </div>
+
+                <div class="form-group">
+                    <select name="team2_id" id="team2_id" class="form-control" required>
+                        <option value="" disabled {% if not edit_match_data %}selected{% endif %}>Select Team 2</option>
+                        {% for team in teams %}
+                            <option value="{{ team.team_id }}" {% if edit_match_data and edit_match_data.team2_id == team.team_id %}selected{% endif %}>{{ team.team_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="team2_id" class="form-label">Team 2</label>
+                </div>
+
+                <div class="form-group">
+                    <select name="venue_id" id="venue_id" class="form-control" required>
+                        <option value="" disabled {% if not edit_match_data %}selected{% endif %}>Select Venue</option>
+                        {% for venue in venues %}
+                            <option value="{{ venue.venue_id }}" {% if edit_match_data and edit_match_data.venue_id == venue.venue_id %}selected{% endif %}>{{ venue.venue_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="venue_id" class="form-label">Venue</label>
+                </div>
+
+                <div class="form-group">
+                    <input type="date" name="match_date" id="match_date" placeholder=" " class="form-control" value="{% if edit_match_data %}{{ edit_match_data.match_date }}{% endif %}" required>
+                    <label for="match_date" class="form-label">Match Date</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    {% if edit_match_data %}
+                        <i class="fas fa-edit"></i> Update Match
+                    {% else %}
+                        <i class="fas fa-plus-circle"></i> Add Match
+                    {% endif %}
+                </button>
+            </form>
+        </section>
+
+        <section class="card match-list-section">
+            <h2>Match List</h2>
+            {% if matches %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Team 1</th>
+                            <th>Team 2</th>
+                            <th>Venue</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in matches %}
+                        <tr>
+                            <td data-label="ID">{{ row.match_id }}</td>
+                            <td data-label="Team 1">{{ row.team1.team_name if row.team1 else '' }}</td>
+                            <td data-label="Team 2">{{ row.team2.team_name if row.team2 else '' }}</td>
+                            <td data-label="Venue">{{ row.venue.venue_name if row.venue else '' }}</td>
+                            <td data-label="Date">{{ row.match_date.strftime('%d %b, %Y') if row.match_date else '' }}</td>
+                            <td class="actions" data-label="Action">
+                                <a href="/admin/manage_matches?edit={{ row.match_id }}" class="btn btn-edit btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="/admin/manage_matches?delete={{ row.match_id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this match? This action cannot be undone.')">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data-message">No matches yet. Add a new one!</p>
+            {% endif %}
+        </section>
+    </div>
+</body>
+</html>

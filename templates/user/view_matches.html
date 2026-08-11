@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricInfo | Match Schedule</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0066ff;
+            --primary-dark: #0052cc;
+            --secondary: #00d4ff;
+            --accent: #ff6b35;
+            --success: #00c851;
+            --danger: #ff4444;
+            --warning: #ffbb33;
+            
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --bg-card: rgba(31, 41, 55, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+            
+            --blur: blur(20px);
+            --radius: 16px;
+            --radius-lg: 24px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .bg-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--primary), transparent);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--secondary), transparent);
+            top: 60%;
+            right: 20%;
+            animation-delay: 7s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, var(--accent), transparent);
+            bottom: 20%;
+            left: 30%;
+            animation-delay: 14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.02;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+            width: 100%;
+        }
+
+        .back-btn {
+            position: fixed;
+            left: 2rem;
+            top: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-glass);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .page-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section {
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .section-badge {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-finished {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 68, 68, 0.2);
+        }
+
+        .badge-upcoming {
+            background: rgba(0, 200, 81, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(0, 200, 81, 0.2);
+        }
+
+        .matches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .match-card {
+            background: var(--bg-card);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .match-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .match-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-xl);
+            background: rgba(31, 41, 55, 0.9);
+        }
+
+        .match-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .match-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .match-date {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .match-status {
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-finished {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 68, 68, 0.2);
+        }
+
+        .status-upcoming {
+            background: rgba(0, 200, 81, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(0, 200, 81, 0.2);
+        }
+
+        .teams-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .team-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .team-logo::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .match-card:hover .team-logo::before {
+            opacity: 1;
+        }
+
+        .team-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        .vs-divider {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 1rem;
+        }
+
+        .vs-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--accent);
+            background: rgba(255, 107, 53, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .vs-line {
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(to bottom, transparent, var(--border), transparent);
+        }
+
+        .score-section {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .team-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .score-separator {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        .match-result {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .venue-section {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: auto;
+        }
+
+        .venue-icon {
+            color: var(--accent);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--bg-glass);
+            width: 100%;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--text-secondary);
+        }
+
+        .interactive {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .interactive:active {
+            transform: scale(0.98);
+        }
+
+        .back-btn:focus,
+        .match-card:focus-within {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                padding: 1.5rem;
+            }
+            .matches-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                gap: 1.5rem;
+            }
+            .header {
+                margin-bottom: 2rem;
+            }
+            .back-btn {
+                position: static;
+                transform: none;
+                margin-bottom: 1rem;
+                align-self: flex-start;
+            }
+            .page-title {
+                font-size: clamp(2rem, 8vw, 3rem);
+            }
+            .page-subtitle {
+                font-size: 1rem;
+            }
+            .section {
+                margin-bottom: 1.5rem;
+            }
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+                margin-bottom: 1rem;
+            }
+            .section-title {
+                font-size: 1.5rem;
+            }
+            .matches-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .match-card {
+                padding: 1rem;
+                gap: 0.75rem;
+            }
+            .match-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .match-date {
+                font-size: 0.75rem;
+            }
+            .match-status {
+                font-size: 0.65rem;
+                padding: 0.25rem 0.5rem;
+            }
+            .teams-section {
+                flex-direction: row;
+                gap: 1rem;
+            }
+            .team {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            .team-logo {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            .team-name {
+                font-size: 0.8rem;
+            }
+            .vs-divider {
+                gap: 0.25rem;
+                margin: 0 0.5rem;
+            }
+            .vs-text {
+                font-size: 1rem;
+                padding: 0.15rem 0.6rem;
+            }
+            .vs-line {
+                height: 20px;
+            }
+            .score-section {
+                padding: 0.75rem;
+            }
+            .score-display {
+                gap: 0.75rem;
+                margin-bottom: 0.5rem;
+            }
+            .team-score {
+                font-size: 1.2rem;
+            }
+            .score-separator {
+                font-size: 1rem;
+            }
+            .match-result {
+                font-size: 0.75rem;
+            }
+            .venue-section {
+                font-size: 0.75rem;
+                gap: 0.25rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            .section-title {
+                font-size: 1.5rem;
+            }
+            .team-logo {
+                width: 45px;
+                height: 45px;
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-effects">
+        <div class="grid-bg"></div>
+        <div class="floating-orb orb-1"></div>
+        <div class="floating-orb orb-2"></div>
+        <div class="floating-orb orb-3"></div>
+    </div>
+
+    <a href="/user/dashboard" class="back-btn interactive">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+    </a>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="page-title">Match Schedule</h1>
+            <p class="page-subtitle">Stay updated with all cricket matches - completed results and upcoming fixtures</p>
+        </header>
+
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Recent Results</h2>
+                <span class="section-badge badge-finished">Completed</span>
+            </div>
+            
+            <div class="matches-grid">
+                {% if finished_matches %}
+                    {% for row in finished_matches %}
+                        <div class="match-card interactive">
+                            <div class="match-header">
+                                <div class="match-date">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>{{ row.match_date.strftime('%a, %b %d, %Y') if row.match_date else '' }}</span>
+                                </div>
+                                <span class="match-status status-finished">Finished</span>
+                            </div>
+                            
+                            <div class="teams-section">
+                                <div class="team">
+                                    <div class="team-logo">
+                                        {% if row.team1 and row.team1.logo %}
+                                            {% if '/' in row.team1.logo %}
+                                                <img src="/{{ row.team1.logo }}" alt="{{ row.team1.team_name }} Logo">
+                                            {% else %}
+                                                <img src="/uploads/{{ row.team1.logo }}" alt="{{ row.team1.team_name }} Logo">
+                                            {% endif %}
+                                        {% else %}
+                                            <span>{{ row.team1.team_name[0] if row.team1 else 'T' }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="team-name">{{ row.team1.team_name if row.team1 else '' }}</span>
+                                </div>
+                                
+                                <div class="vs-divider">
+                                    <div class="vs-line"></div>
+                                    <div class="vs-text">VS</div>
+                                    <div class="vs-line"></div>
+                                </div>
+                                
+                                <div class="team">
+                                    <div class="team-logo">
+                                        {% if row.team2 and row.team2.logo %}
+                                            {% if '/' in row.team2.logo %}
+                                                <img src="/{{ row.team2.logo }}" alt="{{ row.team2.team_name }} Logo">
+                                            {% else %}
+                                                <img src="/uploads/{{ row.team2.logo }}" alt="{{ row.team2.team_name }} Logo">
+                                            {% endif %}
+                                        {% else %}
+                                            <span>{{ row.team2.team_name[0] if row.team2 else 'T' }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="team-name">{{ row.team2.team_name if row.team2 else '' }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="score-section">
+                                <div class="score-display">
+                                    <span class="team-score">
+                                        {{ row.summary[0].team1_score if row.summary else 'N/A' }}{% if row.summary and row.summary[0].team1_wickets is not none %}/{{ row.summary[0].team1_wickets }}{% endif %}
+                                    </span>
+                                    <span class="score-separator">•</span>
+                                    <span class="team-score">
+                                        {{ row.summary[0].team2_score if row.summary else 'N/A' }}{% if row.summary and row.summary[0].team2_wickets is not none %}/{{ row.summary[0].team2_wickets }}{% endif %}
+                                    </span>
+                                </div>
+                                <div class="match-result">
+                                    {{ row.summary[0].result if row.summary else 'Match completed.' }}
+                                </div>
+                            </div>
+                            
+                            <div class="venue-section">
+                                <i class="fas fa-map-marker-alt venue-icon"></i>
+                                <span>{{ row.venue.venue_name if row.venue else '' }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check empty-icon"></i>
+                        <h3 class="empty-title">No Recent Matches</h3>
+                        <p class="empty-description">Matches will appear here once their summaries are added.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Upcoming Fixtures</h2>
+                <span class="section-badge badge-upcoming">Scheduled</span>
+            </div>
+            
+            <div class="matches-grid">
+                {% if upcoming_matches %}
+                    {% for row in upcoming_matches %}
+                        <div class="match-card interactive">
+                            <div class="match-header">
+                                <div class="match-date">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>{{ row.match_date.strftime('%a, %b %d, %Y') if row.match_date else '' }}</span>
+                                </div>
+                                <span class="match-status status-upcoming">Upcoming</span>
+                            </div>
+                            
+                            <div class="teams-section">
+                                <div class="team">
+                                    <div class="team-logo">
+                                        {% if row.team1 and row.team1.logo %}
+                                            {% if '/' in row.team1.logo %}
+                                                <img src="/{{ row.team1.logo }}" alt="{{ row.team1.team_name }} Logo">
+                                            {% else %}
+                                                <img src="/uploads/{{ row.team1.logo }}" alt="{{ row.team1.team_name }} Logo">
+                                            {% endif %}
+                                        {% else %}
+                                            <span>{{ row.team1.team_name[0] if row.team1 else 'T' }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="team-name">{{ row.team1.team_name if row.team1 else '' }}</span>
+                                </div>
+                                
+                                <div class="vs-divider">
+                                    <div class="vs-line"></div>
+                                    <div class="vs-text">VS</div>
+                                    <div class="vs-line"></div>
+                                </div>
+                                
+                                <div class="team">
+                                    <div class="team-logo">
+                                        {% if row.team2 and row.team2.logo %}
+                                            {% if '/' in row.team2.logo %}
+                                                <img src="/{{ row.team2.logo }}" alt="{{ row.team2.team_name }} Logo">
+                                            {% else %}
+                                                <img src="/uploads/{{ row.team2.logo }}" alt="{{ row.team2.team_name }} Logo">
+                                            {% endif %}
+                                        {% else %}
+                                            <span>{{ row.team2.team_name[0] if row.team2 else 'T' }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="team-name">{{ row.team2.team_name if row.team2 else '' }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="score-section">
+                                <div class="match-result">
+                                    Scheduled on {{ row.match_date.strftime('%a, %b %d, %Y') if row.match_date else '' }}
+                                </div>
+                            </div>
+                            
+                            <div class="venue-section">
+                                <i class="fas fa-map-marker-alt venue-icon"></i>
+                                <span>{{ row.venue.venue_name if row.venue else '' }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-plus empty-icon"></i>
+                        <h3 class="empty-title">No Upcoming Matches</h3>
+                        <p class="empty-description">All matches have been summarized, or no new matches are scheduled.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.documentElement.style.scrollBehavior = 'smooth';
+
+        document.querySelectorAll('.match-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        window.addEventListener('load', function() {
+            document.querySelectorAll('.match-card').forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100 + 200);
+            });
+        });
+
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.querySelectorAll('.match-card').forEach((card, index) => {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(30px)';
+                            setTimeout(() => {
+                                card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, index * 100);
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.section').forEach(section => {
+                const firstCard = section.querySelector('.match-card');
+                if (!firstCard || getComputedStyle(firstCard).opacity === '0') {
+                    observer.observe(section);
+                }
+            });
+        }
+        
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const ripple = document.createElement('span');
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+            
+            const existingRipple = button.querySelector('.ripple');
+            if (existingRipple) {
+                existingRipple.remove();
+            }
+            button.appendChild(ripple);
+            
+            ripple.addEventListener('animationend', () => {
+                ripple.remove();
+            });
+        }
+
+        document.querySelectorAll('.back-btn, .match-card').forEach(element => {
+            element.classList.add('interactive');
+            element.addEventListener('click', createRipple);
+        });
+
+        if (!document.querySelector('style#ripple-style')) {
+            const style = document.createElement('style');
+            style.id = 'ripple-style';
+            style.textContent = `
+                .ripple {
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.3);
+                    transform: scale(0);
+                    animation: ripple-effect 0.6s ease-out forwards;
+                    z-index: 2;
+                    pointer-events: none;
+                }
+                @keyframes ripple-effect {
+                    to {
+                        transform: scale(2.5);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
+</body>
+</html>

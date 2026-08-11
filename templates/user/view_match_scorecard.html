@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scorecard | {{ match.team1.team_name if match.team1 else 'Team 1' }} vs {{ match.team2.team_name if match.team2 else 'Team 2' }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0066ff;
+            --primary-dark: #0052cc;
+            --secondary: #00d4ff;
+            --accent: #ff6b35;
+            --success: #00c851;
+            --danger: #ff4444;
+            --warning: #ffbb33;
+            
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --bg-card: rgba(31, 41, 55, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+            
+            --blur: blur(20px);
+            --radius: 16px;
+            --radius-lg: 24px;
+
+            --score-runs-color: var(--success);
+            --score-wickets-color: var(--danger);
+            --stat-value-color: var(--text-primary);
+            --overs-balls-color: var(--secondary);
+            --strike-rate-color: var(--warning);
+            --economy-rate-color: var(--primary);
+            --vs-text-color: var(--accent);
+            --header-match-info-bg: var(--bg-tertiary);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .bg-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--primary), transparent);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--secondary), transparent);
+            top: 60%;
+            right: 20%;
+            animation-delay: 7s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, var(--accent), transparent);
+            bottom: 20%;
+            left: 30%;
+            animation-delay: 14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.02;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--bg-glass);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            z-index: 1;
+            border: 1px solid var(--border);
+            animation: fade-in-up 0.8s ease-out;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 0;
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 100;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-glass);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .back-btn:hover {
+            background: var(--bg-tertiary);
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-lg);
+        }
+        .back-btn i {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-right: 0.5rem;
+        }
+
+        .page-title {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .compact-match-info-display {
+            background-color: var(--header-match-info-bg);
+            color: var(--text-primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .compact-match-info-display .main-info-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            gap: 1.5rem;
+        }
+
+        .compact-match-info-display .team-block-compact {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            flex-shrink: 0;
+            min-width: 0;
+        }
+        .compact-match-info-display .team-logo {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--border);
+        }
+        .compact-match-info-display .team-name-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-transform: uppercase;
+        }
+
+        .compact-match-info-display .scores-display-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            gap: 0.5rem;
+        }
+        .compact-match-info-display .score-with-wickets {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2em;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--text-primary); 
+            white-space: nowrap; 
+        }
+        .compact-match-info-display .winner-score {
+            color: var(--success);
+        }
+        .compact-match-info-display .vs-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2em;
+            color: var(--vs-text-color);
+            font-weight: 800;
+            flex-shrink: 0;
+            margin: 0 0.5rem;
+        }
+
+        .compact-match-info-display .match-result-heading {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-align: center;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .scorecard-section {
+            margin-bottom: 0;
+        }
+        .scorecard-section-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .scorecard-section-title::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            width: 40px; 
+            height: 2px; 
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 1px;
+        }
+
+        .scorecard-table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            min-width: 600px;
+        }
+        .scorecard-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+        }
+        .scorecard-table th, .scorecard-table td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+        .scorecard-table th {
+            background-color: var(--bg-primary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .scorecard-table tbody tr:nth-child(odd) {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .scorecard-table tbody tr:nth-child(even) {
+            background-color: rgba(0,0,0,0);
+        }
+        .scorecard-table tbody tr:hover {
+            background-color: rgba(0, 102, 255, 0.1);
+            transform: scale(1.005);
+            box-shadow: inset 0 0 0 2px var(--primary-dark);
+        }
+        .scorecard-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .player-cell-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .player-scorecard-photo {
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--secondary);
+            box-shadow: var(--shadow-sm);
+        }
+        .player-scorecard-photo.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-secondary);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            border: 2px solid var(--border);
+        }
+        .player-scorecard-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .player-scorecard-role-small {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: capitalize;
+        }
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.0em;
+            font-weight: 700;
+            color: var(--stat-value-color);
+        }
+        .stat-value.runs { color: var(--score-runs-color); }
+        .stat-value.wickets { color: var(--score-wickets-color); }
+        .stat-value.balls, .stat-value.overs { color: var(--overs-balls-color); }
+        .stat-value.strike-rate { color: var(--strike-rate-color); }
+        .stat-value.economy-rate { color: var(--economy-rate-color); }
+
+        .no-data-message {
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+            font-size: 1.1em;
+            color: var(--text-muted);
+            background: var(--bg-glass);
+            border-radius: var(--radius-lg);
+            border: 2px dashed var(--border);
+            margin-top: 1.5rem;
+            box-shadow: var(--shadow-md);
+        }
+        .no-data-message i {
+            font-size: 2.5em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .no-data-message h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .no-data-message p {
+            color: var(--text-secondary);
+        }
+
+        .scorecard-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius);
+            padding: 0.4rem;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            width: 100%;
+        }
+        .scorecard-tab {
+            flex: 1;
+            padding: 0.7rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: calc(var(--radius) - 3px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .scorecard-tab:hover {
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.05);
+        }
+        .scorecard-tab.active {
+            color: var(--primary);
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            border-top: 3px solid var(--primary);
+        }
+        .scorecard-tab.active:hover {
+            transform: translateY(-2px);
+        }
+
+        .team-scorecard-display {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .team-scorecard-display.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            margin-top: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            opacity: 0.8;
+            z-index: 1;
+        }
+        footer .glass-effect {
+            padding: 0.6rem 1.5rem; 
+            border-radius: 9999px;
+            box-shadow: var(--shadow-sm); 
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            display: inline-block; 
+        }
+        footer p {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        footer i {
+            color: var(--danger);
+            margin-right: 0; 
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: particle-float 15s linear forwards;
+            opacity: 0;
+            z-index: -1;
+        }
+
+        @keyframes particle-float {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            5% { opacity: 0.8; }
+            95% { opacity: 0.8; }
+            100% { transform: translateY(-50vh) scale(1.2); opacity: 0; }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0);
+            pointer-events: none;
+            animation: ripple-effect 0.6s ease-out;
+            z-index: 100;
+        }
+
+        @keyframes ripple-effect {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .interactive {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .interactive:active {
+            transform: scale(0.98);
+        }
+
+        .back-btn:focus,
+        .compact-match-info-display:focus-within,
+        .scorecard-tab:focus,
+        .scorecard-table tbody tr:focus-within {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                padding: 1.5rem;
+            }
+            .page-title {
+                font-size: clamp(2rem, 4.5vw, 3rem);
+            }
+            .compact-match-info-display {
+                padding: 1rem;
+                gap: 0.75rem;
+            }
+            .compact-match-info-display .main-info-line {
+                gap: 1rem;
+            }
+            .compact-match-info-display .team-logo {
+                width: 45px; height: 45px;
+            }
+            .compact-match-info-display .score-with-wickets {
+                font-size: 1.8em;
+            }
+            .compact-match-info-display .vs-text {
+                font-size: 1em;
+            }
+            .compact-match-info-display .team-name-text {
+                font-size: 0.8rem;
+            }
+            .compact-match-info-display .match-result-heading {
+                font-size: 0.8rem;
+            }
+
+            .scorecard-section {
+                padding: 1.5rem;
+            }
+            .scorecard-section-title {
+                font-size: 1.3rem;
+            }
+            .scorecard-table th, .scorecard-table td {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            .player-scorecard-photo {
+                width: 30px; height: 30px;
+            }
+            .player-scorecard-name {
+                font-size: 0.9rem;
+            }
+            .player-scorecard-role-small {
+                font-size: 0.7rem;
+            }
+            .stat-value {
+                font-size: 0.9em;
+            }
+            .scorecard-tabs {
+                padding: 0.3rem;
+            }
+            .scorecard-tab {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .container {
+                padding: 1rem;
+                gap: 1rem;
+            }
+            .back-btn {
+                position: static;
+                margin-bottom: 1rem;
+                align-self: flex-start;
+                padding: 0.6rem 1rem;
+                font-size: 0.8rem;
+            }
+            .back-btn i {
+                font-size: 0.9rem;
+            }
+            .page-title {
+                font-size: clamp(1.8rem, 7vw, 2.2rem);
+            }
+            .compact-match-info-display {
+                padding: 0.8rem;
+                gap: 0.5rem;
+            }
+            .compact-match-info-display .main-info-line {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .compact-match-info-display .team-block-compact {
+                flex-direction: row;
+                gap: 0.5rem;
+                justify-content: center;
+                width: 100%;
+            }
+            .compact-match-info-display .team-logo {
+                width: 40px; height: 40px;
+            }
+            .compact-match-info-display .team-name-text {
+                font-size: 0.75rem;
+            }
+            .compact-match-info-display .score-with-wickets {
+                font-size: 1.5em;
+            }
+            .compact-match-info-display .vs-text {
+                display: none;
+            }
+            .compact-match-info-display .match-result-heading {
+                font-size: 0.75rem;
+            }
+
+            .scorecard-section {
+                padding: 1rem;
+            }
+            .scorecard-section-title {
+                font-size: 1.1rem;
+                margin-bottom: 0.75rem;
+            }
+            .scorecard-table-wrapper {
+                min-width: unset;
+            }
+            .scorecard-table table, 
+            .scorecard-table thead, 
+            .scorecard-table tbody, 
+            .scorecard-table th, 
+            .scorecard-table td, 
+            .scorecard-table tr {
+                display: block;
+            }
+            .scorecard-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            .scorecard-table tr {
+                border: 1px solid var(--border);
+                margin-bottom: 0.75rem;
+                border-radius: var(--radius);
+                background: var(--bg-tertiary);
+                box-shadow: var(--shadow-sm);
+            }
+            .scorecard-table td {
+                border: none;
+                position: relative;
+                padding-left: 45%;
+                text-align: right;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .scorecard-table td:last-child {
+                border-bottom: none;
+            }
+            .scorecard-table td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0.75rem;
+                width: 40%;
+                padding-right: 0.5rem;
+                white-space: nowrap;
+                font-weight: 600;
+                color: var(--text-muted);
+                text-align: left;
+                text-transform: uppercase;
+                font-size: 0.7em;
+            }
+            .batsmen-table td:nth-of-type(1):before { content: "Player:"; }
+            .batsmen-table td:nth-of-type(2):before { content: "Runs:"; }
+            .batsmen-table td:nth-of-type(3):before { content: "Balls Faced:"; }
+            .batsmen-table td:nth-of-type(4):before { content: "SR:"; }
+
+            .bowlers-table td:nth-of-type(1):before { content: "Player:"; }
+            .bowlers-table td:nth-of-type(2):before { content: "Overs:"; }
+            .bowlers-table td:nth-of-type(3):before { content: "Runs Conceded:"; }
+            .bowlers-table td:nth-of-type(4):before { content: "Wickets:"; }
+            .bowlers-table td:nth-of-type(5):before { content: "ER:"; }
+
+            .player-cell-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+            .player-scorecard-name {
+                font-size: 0.8rem;
+            }
+            .player-scorecard-role-small {
+                font-size: 0.65rem;
+            }
+            .player-scorecard-photo {
+                width: 25px; height: 25px;
+            }
+            .stat-value {
+                font-size: 0.8em;
+            }
+
+            .scorecard-tabs {
+                flex-direction: column;
+                padding: 0;
+                background: none;
+                box-shadow: none;
+                border: none;
+            }
+            .scorecard-tab {
+                border-radius: 0;
+                border-bottom: 1px solid var(--border);
+                border-left: none;
+                border-right: none;
+                padding: 0.6rem 0.8rem;
+                font-size: 0.85rem;
+                background: var(--bg-tertiary);
+            }
+            .scorecard-tab.active { 
+                border-top: none; 
+                border-bottom: 3px solid var(--primary); 
+                box-shadow: var(--shadow-sm);
+                border-left: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+            }
+            .scorecard-tab:first-child { 
+                border-top-left-radius: var(--radius); 
+                border-top-right-radius: var(--radius); 
+                border-top: 1px solid var(--border);
+            }
+            .scorecard-tab:last-child { 
+                border-bottom-left-radius: var(--radius); 
+                border-bottom-right-radius: var(--radius); 
+                border-bottom: 1px solid var(--border); 
+            }
+            .scorecard-tab:not(:last-child) {
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 0.75rem; }
+            .page-title { font-size: clamp(1.4rem, 6vw, 1.8rem); }
+            .back-btn { padding: 0.5rem 0.8rem; font-size: 0.75rem; }
+            .back-btn i { margin-right: 0.25rem; }
+
+            .compact-match-info-display { padding: 0.6rem; gap: 0.4rem; }
+            .compact-match-info-display .team-logo { width: 35px; height: 35px; }
+            .compact-match-info-display .score-with-wickets { font-size: 1.2em; }
+            .compact-match-info-display .team-name-text { font-size: 0.7rem; }
+            .compact-match-info-display .match-result-heading { font-size: 0.7rem; }
+            
+            .scorecard-section-title { font-size: 1rem; margin-bottom: 0.5rem; }
+            .scorecard-section-title::after { width: 30px; height: 1px; }
+
+            .scorecard-table td { padding-left: 40%; }
+            .scorecard-table td:before { left: 0.5rem; width: 35%; font-size: 0.65em; }
+
+            .player-scorecard-photo { width: 20px; height: 20px; font-size: 0.9em; }
+            .player-scorecard-name { font-size: 0.75rem; }
+            .player-scorecard-role-small { font-size: 0.55rem; }
+            .stat-value { font-size: 0.7em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-effects">
+        <div class="grid-bg"></div>
+        <div class="floating-orb orb-1"></div>
+        <div class="floating-orb orb-2"></div>
+        <div class="floating-orb orb-3"></div>
+    </div>
+
+    <a href="/user/view_match_summaries" class="back-btn interactive">
+        <i class="fas fa-arrow-left"></i> <span>Back to Summaries</span>
+    </a>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="page-title">Match Scorecard</h1>
+        </header>
+
+        {% set team1_score_class = '' %}
+        {% set team2_score_class = '' %}
+        {% if summary %}
+            {% if summary.team1_score > summary.team2_score %}
+                {% set team1_score_class = 'winner-score' %}
+            {% elif summary.team2_score > summary.team1_score %}
+                {% set team2_score_class = 'winner-score' %}
+            {% endif %}
+        {% endif %}
+
+        <section class="compact-match-info-display interactive"> 
+            <div class="main-info-line">
+                <div class="team-block-compact">
+                    {% if match.team1 and match.team1.logo %}
+                        {% if '/' in match.team1.logo %}
+                            <img src="/{{ match.team1.logo }}" class="team-logo" alt="{{ match.team1.team_name }} Logo" onerror="this.onerror=null;this.src='https://placehold.co/50x50/333333/999999?text=T'">
+                        {% else %}
+                            <img src="/uploads/{{ match.team1.logo }}" class="team-logo" alt="{{ match.team1.team_name }} Logo" onerror="this.onerror=null;this.src='https://placehold.co/50x50/333333/999999?text=T'">
+                        {% endif %}
+                    {% else %}
+                        <img src="https://placehold.co/50x50/333333/999999?text=T" class="team-logo" alt="Default Logo">
+                    {% endif %}
+                    <span class="team-name-text">{{ match.team1.team_name if match.team1 else 'Team 1' }}</span>
+                </div>
+
+                <div class="scores-display-wrapper">
+                    <span class="score-with-wickets {{ team1_score_class }}">
+                        {{ summary.team1_score if summary else 'N/A' }}{% if summary and summary.team1_wickets is not none %}/{{ summary.team1_wickets }}{% endif %}
+                    </span>
+                    <span class="vs-text">VS</span>
+                    <span class="score-with-wickets {{ team2_score_class }}">
+                        {{ summary.team2_score if summary else 'N/A' }}{% if summary and summary.team2_wickets is not none %}/{{ summary.team2_wickets }}{% endif %}
+                    </span>
+                </div>
+
+                <div class="team-block-compact">
+                    {% if match.team2 and match.team2.logo %}
+                        {% if '/' in match.team2.logo %}
+                            <img src="/{{ match.team2.logo }}" class="team-logo" alt="{{ match.team2.team_name }} Logo" onerror="this.onerror=null;this.src='https://placehold.co/50x50/333333/999999?text=T'">
+                        {% else %}
+                            <img src="/uploads/{{ match.team2.logo }}" class="team-logo" alt="{{ match.team2.team_name }} Logo" onerror="this.onerror=null;this.src='https://placehold.co/50x50/333333/999999?text=T'">
+                        {% endif %}
+                    {% else %}
+                        <img src="https://placehold.co/50x50/333333/999999?text=T" class="team-logo" alt="Default Logo">
+                    {% endif %}
+                    <span class="team-name-text">{{ match.team2.team_name if match.team2 else 'Team 2' }}</span>
+                </div>
+            </div>
+            <p class="match-result-heading">{{ summary.result if summary else 'Match scheduled.' }}</p>
+        </section>
+
+        <div class="scorecard-tabs">
+            <div class="scorecard-tab active interactive" data-team-id="{{ match.team1_id }}">
+                {{ match.team1.team_name if match.team1 else 'Team 1' }}
+            </div>
+            <div class="scorecard-tab interactive" data-team-id="{{ match.team2_id }}">
+                {{ match.team2.team_name if match.team2 else 'Team 2' }}
+            </div>
+        </div>
+
+        {% for t_id in [match.team1_id, match.team2_id] %}
+            <div class="team-scorecard-display" id="scorecard-{{ t_id }}" data-team-id="{{ t_id }}">
+                {% set team_stats = team_scorecards.get(t_id, {'batsmen': [], 'bowlers': []}) %}
+                
+                {% if team_stats.batsmen %}
+                    <section class="section scorecard-section batsmen-scorecard-section">
+                        <h2 class="scorecard-section-title">Batsmen Scorecard</h2>
+                        <div class="scorecard-table-wrapper">
+                            <table class="scorecard-table batsmen-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>Runs</th>
+                                        <th>Balls Faced</th>
+                                        <th>Strike Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for player in team_stats.batsmen %}
+                                        <tr>
+                                            <td data-label="Player:">
+                                                <div class="player-cell-info">
+                                                    {% if player.player_photo %}
+                                                        <img src="/uploads/players/{{ player.player_photo }}" class="player-scorecard-photo" alt="{{ player.player_name }} Photo" onerror="this.onerror=null;this.replaceWith(document.createElement('i'));this.className='fas fa-user-circle player-scorecard-photo placeholder';">
+                                                    {% else %}
+                                                        <i class="fas fa-user-circle player-scorecard-photo placeholder"></i>
+                                                    {% endif %}
+                                                    <div>
+                                                        <span class="player-scorecard-name">{{ player.player_name }}</span>
+                                                        <span class="player-scorecard-role-small">({{ player.role }})</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-label="Runs:"><span class="stat-value runs">{{ player.runs }}</span></td>
+                                            <td data-label="Balls Faced:"><span class="stat-value balls">{{ player.balls_faced }}</span></td> 
+                                            <td data-label="SR:"><span class="stat-value strike-rate">{{ player.strike_rate }}</span></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                {% endif %}
+
+                {% if team_stats.bowlers %}
+                    <section class="section scorecard-section bowlers-scorecard-section">
+                        <h2 class="scorecard-section-title">Bowlers Scorecard</h2>
+                        <div class="scorecard-table-wrapper">
+                            <table class="scorecard-table bowlers-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>Overs</th>
+                                        <th>Runs Conceded</th>
+                                        <th>Wickets</th>
+                                        <th>Economy Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for player in team_stats.bowlers %}
+                                        <tr>
+                                            <td data-label="Player:">
+                                                <div class="player-cell-info">
+                                                    {% if player.player_photo %}
+                                                        <img src="/uploads/players/{{ player.player_photo }}" class="player-scorecard-photo" alt="{{ player.player_name }} Photo" onerror="this.onerror=null;this.replaceWith(document.createElement('i'));this.className='fas fa-user-circle player-scorecard-photo placeholder';">
+                                                    {% else %}
+                                                        <i class="fas fa-user-circle player-scorecard-photo placeholder"></i>
+                                                    {% endif %}
+                                                    <div>
+                                                        <span class="player-scorecard-name">{{ player.player_name }}</span>
+                                                        <span class="player-scorecard-role-small">({{ player.role }})</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-label="Overs:"><span class="stat-value overs">{{ player.overs_bowled }}</span></td>
+                                            <td data-label="Runs Conceded:"><span class="stat-value runs">{{ player.runs_conceded }}</span></td> 
+                                            <td data-label="Wickets:"><span class="stat-value wickets">{{ player.wickets }}</span></td>
+                                            <td data-label="ER:"><span class="stat-value economy-rate">{{ player.economy_rate }}</span></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                {% endif %}
+
+                {% if not team_stats.batsmen and not team_stats.bowlers %}
+                    <div class="no-data-message">
+                        <i class="fas fa-frown"></i>
+                        <h3>No Scorecard Data for this Team</h3>
+                        <p>It looks like player score data is not available for this match yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <footer>
+        <div class="glass-effect">
+            <p>
+                <i class="fas fa-heart"></i>
+                &copy; 2026 Cricket Management System - Made with passion for cricket
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = 100 + Math.random() * 10 + 'vh'; 
+            particle.style.width = particle.style.height = Math.random() * 4 + 2 + 'px';
+            
+            const colors = ['#a8edea', '#fed6e3', '#d299c2', '#fef9d7', '#87CEEB', '#ADD8E6'];
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            particle.style.borderRadius = '50%';
+            document.body.appendChild(particle);
+
+            const duration = Math.random() * 8 + 10;
+            const endY = -100 - Math.random() * 50;
+            const endX = Math.random() * 20 - 10;
+            
+            particle.style.setProperty('--end-y', `${endY}vh`);
+            particle.style.setProperty('--end-x', `${endX}vw`);
+            particle.style.animationDuration = `${duration}s`;
+            
+            setTimeout(() => {
+                particle.remove();
+            }, duration * 1000);
+        }
+
+        if (!document.getElementById('particle-animations-style')) {
+            const style = document.createElement('style');
+            style.id = 'particle-animations-style';
+            style.textContent = `
+                @keyframes particle-float {
+                    from { transform: translateY(0) translateX(0); opacity: 0; }
+                    20% { opacity: 0.7; }
+                    80% { opacity: 0.7; }
+                    to { transform: translateY(var(--end-y)) translateX(var(--end-x)); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        setInterval(createParticle, 1000);
+
+        function createRipple(event) {
+            const element = event.currentTarget;
+            const ripple = document.createElement('span');
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height) * 0.8; 
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            ripple.classList.add('ripple');
+            
+            const existingRipple = element.querySelector('.ripple');
+            if (existingRipple) {
+                existingRipple.remove(); 
+            }
+            element.appendChild(ripple);
+
+            ripple.addEventListener('animationend', () => {
+                ripple.remove();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.back-btn, .compact-match-info-display, .scorecard-tab, .scorecard-table tbody tr').forEach(element => { 
+                element.classList.add('interactive'); 
+                element.addEventListener('click', createRipple);
+            });
+
+            const scorecardTabs = document.querySelectorAll('.scorecard-tab');
+            const teamScorecardDisplays = document.querySelectorAll('.team-scorecard-display');
+            const team1Id = "{{ match.team1_id }}";
+            const team2Id = "{{ match.team2_id }}";
+
+            function showTeamScorecard(teamIdToShow) {
+                scorecardTabs.forEach(tab => {
+                    if (tab.dataset.teamId == teamIdToShow) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+
+                teamScorecardDisplays.forEach(display => {
+                    if (display.dataset.teamId == teamIdToShow) {
+                        display.classList.add('active');
+                    } else {
+                        display.classList.remove('active');
+                    }
+                });
+            }
+
+            scorecardTabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    showTeamScorecard(this.dataset.teamId);
+                });
+            });
+
+            showTeamScorecard(team1Id);
+
+            const sections = document.querySelectorAll('.scorecard-section, .compact-match-info-display');
+            sections.forEach((section, sectionIndex) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    section.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, sectionIndex * 150 + 200);
+            });
+
+            const allTableRows = document.querySelectorAll('.scorecard-table tbody tr');
+            allTableRows.forEach((row, rowIndex) => {
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    row.style.transition = 'all 0.5s ease-out';
+                    row.style.opacity = '1';
+                    row.style.transform = 'translateY(0)';
+                }, (sections.length * 150) + (rowIndex * 50) + 300);
+            });
+        });
+    </script>
+</body>
+</html>

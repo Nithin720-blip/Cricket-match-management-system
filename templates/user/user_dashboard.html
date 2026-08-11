@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CricInfo - User Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070709;
+            --panel-bg: rgba(15, 15, 20, 0.85);
+            --primary-glow: #ff4500;
+            --secondary-glow: #00d2ff;
+            --text-main: #ffffff;
+            --text-muted: #a0a0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center center;
+        }
+
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            width: 80vw;
+            height: 80vh;
+            border-radius: 50%;
+            filter: blur(150px);
+            z-index: -1;
+            opacity: 0.15;
+            animation: searchlight 12s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+
+        body::before {
+            top: -20%;
+            left: -20%;
+            background: radial-gradient(circle, var(--primary-glow), transparent 60%);
+        }
+
+        body::after {
+            bottom: -20%;
+            right: -20%;
+            background: radial-gradient(circle, var(--secondary-glow), transparent 60%);
+            animation-delay: -6s;
+        }
+
+        @keyframes searchlight {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.1; }
+            100% { transform: translate(10%, 10%) scale(1.3); opacity: 0.25; }
+        }
+
+        .dashboard-container {
+            min-height: 100vh;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+            animation: stampIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes stampIn {
+            0% { opacity: 0; transform: scale(0.8) translateY(-50px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .logo-container {
+            position: relative;
+        }
+
+        .logo-container img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 16px;
+            padding: 10px;
+            background: linear-gradient(145deg, #1a1a24, #0d0d12);
+            border: 2px solid #2a2a35;
+            box-shadow: 
+                10px 10px 20px rgba(0,0,0,0.8), 
+                -5px -5px 15px rgba(255,255,255,0.02),
+                inset 0 0 20px rgba(255, 69, 0, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .logo-container:hover img {
+            transform: translateY(-5px);
+            border-color: var(--primary-glow);
+            box-shadow: 
+                0 15px 30px rgba(0,0,0,0.9), 
+                0 0 40px rgba(255, 69, 0, 0.4);
+        }
+
+        .dashboard-header h1 {
+            font-family: 'Teko', sans-serif;
+            font-size: 5.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            line-height: 1;
+            background: linear-gradient(180deg, #ffffff 0%, #b3b3b3 50%, #666666 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 4px 20px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .dashboard-header h1::after {
+            content: 'CRICINFO';
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: -1;
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: blur(15px);
+            opacity: 0.6;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1300px;
+            width: 100%;
+            margin-bottom: 5rem;
+        }
+
+        .menu-item {
+            position: relative;
+            background: var(--panel-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #222;
+            box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.8);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            animation: slideUpFade 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .menu-item:nth-child(1) { animation-delay: 0.1s; border-bottom: 3px solid #ff3333; }
+        .menu-item:nth-child(2) { animation-delay: 0.2s; border-bottom: 3px solid #00e676; }
+        .menu-item:nth-child(3) { animation-delay: 0.3s; border-bottom: 3px solid #00b0ff; }
+        .menu-item:nth-child(4) { animation-delay: 0.4s; border-bottom: 3px solid #ff9100; }
+        .menu-item:nth-child(5) { animation-delay: 0.5s; border-bottom: 3px solid #ffd600; }
+        .menu-item:nth-child(6) { animation-delay: 0.6s; border-bottom: 3px solid #d500f9; }
+
+        .menu-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: skewX(-25deg);
+            transition: 0.5s;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-8px) translateX(-4px);
+            box-shadow: 12px 12px 0px rgba(0, 0, 0, 0.9), 0 0 25px rgba(255,255,255,0.05);
+            background: #15151e;
+        }
+
+        .menu-item:hover::after {
+            left: 200%;
+        }
+
+        .menu-item a {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2.5rem 2rem;
+            text-decoration: none;
+            color: white;
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            gap: 1.5rem;
+        }
+
+        .menu-item .icon {
+            font-size: 3rem;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            border-radius: 12px;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 15px rgba(255,255,255,0.05);
+        }
+
+        .menu-item:hover .icon {
+            transform: scale(1.1) rotate(-5deg);
+            background: #222;
+            border-color: #555;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item .text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            color: #e2e8f0;
+        }
+
+        .menu-item:hover .text {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255,255,255,0.5);
+            transform: translateX(5px);
+        }
+
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem 3rem;
+            background: transparent;
+            border: 2px solid #333;
+            border-radius: 4px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-home::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background: var(--text-main);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn-home:hover {
+            color: #000;
+            border-color: var(--text-main);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-home:hover::before {
+            width: 100%;
+        }
+
+        .floating-element {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.1;
+            filter: grayscale(100%);
+            animation: slowSpin 15s linear infinite;
+        }
+
+        .floating-element:nth-child(1) { top: 10%; left: 5%; font-size: 4rem; }
+        .floating-element:nth-child(2) { top: 40%; right: 5%; font-size: 3rem; animation-direction: reverse; }
+        .floating-element:nth-child(3) { bottom: 10%; left: 15%; font-size: 5rem; }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slowSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header h1 { font-size: 4rem; }
+            .menu-item a { flex-direction: column; text-align: center; justify-content: center; padding: 2rem; }
+            .menu-item:hover { transform: translateY(-4px) translateX(0); box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.9); }
+            .menu-item:hover .text { transform: translateX(0) translateY(5px); }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-header h1 { font-size: 3rem; }
+            .logo-container img { width: 90px; height: 90px; }
+            .menu-item a { padding: 1.5rem; }
+            .menu-item .icon { width: 60px; height: 60px; font-size: 2.5rem; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; border-left: 1px solid #222; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 0px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-glow); }
+    </style>
+</head>
+<body>
+    <div class="floating-element">🏏</div>
+    <div class="floating-element">⚙️</div>
+    <div class="floating-element">🏆</div>
+
+    <main class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="logo-container">
+                <img src="https://png.pngtree.com/png-clipart/20240718/original/pngtree-cricket-logo-player-bat-boll-and-stump-png-image_15581859.png" alt="CricInfo Logo" />
+            </div>
+            <h1>Welcome to CricInfo</h1>
+        </div>
+
+        <div class="menu-grid">
+            <div class="menu-item">
+                <a href="/user/view_matches">
+                    <div class="icon">🏏</div>
+                    <div class="text">Schedule</div>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="/user/view_teams">
+                    <div class="icon">👥</div>
+                    <div class="text">Teams</div>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="/user/view_players">
+                    <div class="icon">👤</div>
+                    <div class="text">Players</div>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="/user/view_match_summaries">
+                    <div class="icon">📊</div>
+                    <div class="text">Match Summaries</div>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="/user/leaderboard">
+                    <div class="icon">🏆</div>
+                    <div class="text">Points Table</div>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="/user/view_player_stats">
+                    <div class="icon">📈</div>
+                    <div class="text">Player Stats</div>
+                </a>
+            </div>
+        </div>
+
+        <a href="/" class="btn-home" title="Back to Home">← Back to Home</a>
+    </main>
+</body>
+</html>

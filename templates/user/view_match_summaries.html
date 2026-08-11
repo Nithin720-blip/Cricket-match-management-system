@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CricInfo | Match Summaries</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0066ff;
+            --primary-dark: #0052cc;
+            --secondary: #00d4ff;
+            --accent: #ff6b35;
+            --success: #00c851;
+            --danger: #ff4444;
+            --warning: #ffbb33;
+            
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --bg-card: rgba(31, 41, 55, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+            
+            --blur: blur(20px);
+            --radius: 16px;
+            --radius-lg: 24px;
+
+            --score-team1-color: var(--text-primary);
+            --score-team2-color: var(--text-primary);
+            --score-winner-color: var(--success);
+            --result-badge-bg: linear-gradient(90deg, var(--warning), var(--accent));
+            --result-badge-text: var(--bg-primary);
+            --vs-separator-color: var(--secondary);
+            --view-scorecard-overlay-bg: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+            --view-scorecard-overlay-text: var(--text-primary);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column; 
+            justify-content: flex-start; 
+            align-items: center; 
+            padding: 1.5rem;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .bg-effects {
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px); 
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out alternate; 
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--primary), transparent);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--secondary), transparent);
+            top: 60%;
+            right: 20%;
+            animation-delay: 7s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, var(--accent), transparent);
+            bottom: 20%;
+            left: 30%;
+            animation-delay: 14s;
+        }
+
+        @keyframes float { 
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.02;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: var(--bg-glass);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            padding: 2.5rem; 
+            border-radius: var(--radius-lg); 
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            z-index: 1; 
+            border: 1px solid var(--border);
+            animation: fade-in-up 0.8s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            gap: 2rem; 
+            margin: 1.5rem auto; 
+        }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header { 
+            text-align: center;
+            margin-bottom: 0;
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+        }
+
+        .back-btn {
+            position: fixed; 
+            left: 1.5rem; 
+            top: 1.5rem; 
+            z-index: 100;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem; 
+            background: var(--bg-glass); 
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius); 
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .back-btn:hover {
+            background: var(--bg-tertiary);
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-lg);
+        }
+        .back-btn i {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-right: 0.5rem; 
+        }
+
+        .page-title { 
+            font-family: 'Inter', sans-serif; 
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem; 
+            line-height: 1.1;
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            gap: 1rem; 
+        }
+        .page-title i { 
+            font-size: 0.8em; 
+            background: linear-gradient(45deg, var(--accent), var(--secondary)); 
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle { 
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section {
+            width: 100%;
+            margin-bottom: 0;
+            background: var(--bg-card); 
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-xl);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .section:hover {
+            transform: translateY(-8px);
+            border-color: var(--border-hover);
+            background: rgba(31, 41, 55, 0.9);
+        }
+
+        .section-header {
+            display: flex;
+            flex-wrap: wrap; 
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem; 
+            gap: 1rem; 
+        }
+        .section-header h2 {
+            font-family: 'Inter', sans-serif; 
+            font-size: 1.875rem; 
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        .section-header h2 i {
+            color: var(--accent); 
+            margin-right: 0.5rem; 
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex-grow: 1; 
+            max-width: 350px; 
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 2.5rem 0.75rem 1rem; 
+            background: var(--bg-tertiary); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius); 
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .search-input:focus {
+            background: var(--bg-primary); 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.3); 
+        }
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+        .search-icon {
+            position: absolute;
+            right: 1rem; 
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary); 
+            pointer-events: none; 
+        }
+
+        .stats-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem; 
+            margin-bottom: 0; 
+            width: 100%;
+        }
+
+        .stat-card {
+            background: var(--bg-tertiary); 
+            border: 1px solid var(--border);
+            border-radius: var(--radius); 
+            padding: 1.5rem; 
+            box-shadow: var(--shadow); 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideInUp 0.6s ease-out forwards; 
+            opacity: 0;
+        }
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            background: rgba(31, 41, 55, 0.95);
+        }
+
+        .stat-card-info p:first-child {
+            font-size: 0.9rem; 
+            color: var(--text-secondary); 
+            margin-bottom: 0.5rem;
+        }
+        .stat-card-info p:last-child {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem; 
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .stat-card-icon-wrapper {
+            width: 50px; height: 50px; 
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem; 
+            color: var(--text-primary); 
+            box-shadow: var(--shadow);
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+        }
+        .stat-card:nth-child(1) .stat-card-icon-wrapper { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); } 
+        .stat-card:nth-child(2) .stat-card-icon-wrapper { background: linear-gradient(135deg, var(--accent), #e05e2d); } 
+
+        .match-summary-card-wrapper {
+            display: grid;
+            gap: 1rem; 
+            width: 100%;
+        }
+
+        .match-summary-card {
+            background: var(--bg-tertiary); 
+            border: 1px solid var(--border);
+            border-radius: var(--radius); 
+            padding: 1.25rem; 
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start; 
+            gap: 1rem; 
+            text-decoration: none; 
+            color: inherit; 
+            cursor: pointer; 
+            position: relative; 
+        }
+        .match-summary-card:hover {
+            transform: translateY(-5px);
+            background: rgba(31, 41, 55, 0.95);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .scorecard-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+            color: var(--view-scorecard-overlay-text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            gap: 0.5rem;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .match-summary-card:hover .scorecard-overlay {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+        .scorecard-overlay i {
+            font-size: 0.9em;
+            transition: transform 0.3s ease;
+        }
+        .match-summary-card:hover .scorecard-overlay i {
+            transform: translateX(5px);
+        }
+
+        .match-summary-inner-grid {
+            display: grid;
+            width: 100%; 
+            grid-template-columns: 2fr 3fr 1.5fr; 
+            align-items: center;
+            gap: 1rem; 
+        }
+
+        .teams-date-section {
+            text-align: left; 
+        }
+        .team-names-display {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.2rem; 
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem; 
+            line-height: 1.3;
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .team-names-display .vs-separator {
+            color: var(--vs-separator-color); 
+            margin: 0 0.5rem;
+            font-size: 1em; 
+            font-weight: 700;
+        }
+        .match-date-display {
+            font-size: 0.85rem; 
+            color: var(--text-secondary); 
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; 
+            gap: 0.5rem;
+        }
+        .match-date-display i {
+            color: var(--secondary); 
+        }
+
+        .score-section {
+            display: flex; 
+            align-items: center;
+            justify-content: center; 
+            gap: 1rem; 
+        }
+
+        .team-score-group {
+            display: flex;
+            flex-direction: column; 
+            align-items: center; 
+            text-align: center;
+        }
+        .team-score-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem; 
+            font-weight: 700;
+            line-height: 1;
+            display: block;
+            white-space: nowrap; 
+        }
+        .team-score-name {
+            font-size: 0.75em; 
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .score-separator-vertical { 
+            width: 2px;
+            height: 35px; 
+            background: var(--border); 
+            border-radius: 1px;
+            flex-shrink: 0; 
+        }
+
+        .score-section .winner { color: var(--score-winner-color); }
+
+        .result-section {
+            text-align: right; 
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+        .result-badge {
+            background: var(--result-badge-bg);
+            color: var(--result-badge-text);
+            font-weight: 700;
+            padding: 0.5rem 0.8rem; 
+            border-radius: var(--radius); 
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            white-space: nowrap; 
+        }
+        .result-badge i {
+            font-size: 1em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--bg-glass);
+            width: 100%;
+            box-shadow: var(--shadow);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .empty-state h3 {
+            font-family: 'Inter', sans-serif; 
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .empty-state p {
+            color: var(--text-secondary);
+        }
+
+        footer {
+            margin-top: 2rem; 
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            opacity: 0.8;
+            z-index: 1;
+        }
+        footer .glass-effect {
+            padding: 0.6rem 1.5rem; 
+            border-radius: 9999px; 
+            box-shadow: var(--shadow-sm); 
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            display: inline-block; 
+        }
+        footer p {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        footer i {
+            color: var(--danger); 
+            margin-right: 0; 
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: particle-float 15s linear forwards;
+            opacity: 0;
+            z-index: -1;
+        }
+
+        @keyframes particle-float {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            5% { opacity: 0.8; }
+            95% { opacity: 0.8; }
+            100% { transform: translateY(-50vh) scale(1.2); opacity: 0; }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0);
+            pointer-events: none;
+            animation: ripple-effect 0.6s ease-out;
+            z-index: 100;
+        }
+
+        @keyframes ripple-effect {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .interactive {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .interactive:active {
+            transform: scale(0.98);
+        }
+
+        .back-btn:focus,
+        .search-input:focus,
+        .match-summary-card:focus-within {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                padding: 1.5rem;
+            }
+            .page-title {
+                font-size: clamp(2rem, 4.5vw, 3.5rem);
+            }
+            .section {
+                padding: 1.5rem;
+            }
+            .section-header h2 {
+                font-size: 1.6rem;
+            }
+            .search-input {
+                padding: 0.6rem 2rem 0.6rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            .search-icon {
+                right: 0.8rem;
+                font-size: 0.9rem;
+            }
+            .stat-card {
+                padding: 1.25rem;
+            }
+            .stat-card-info p:last-child {
+                font-size: 2.2rem;
+            }
+            .stat-card-icon-wrapper {
+                width: 45px; height: 45px;
+                font-size: 1.4rem;
+            }
+            .match-summary-card {
+                padding: 1rem;
+            }
+            .match-summary-inner-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            .teams-date-section,
+            .score-section,
+            .result-section {
+                text-align: center;
+            }
+            .match-date-display {
+                justify-content: center;
+            }
+            .score-section {
+                flex-direction: row;
+                gap: 0.75rem;
+            }
+            .score-separator-vertical {
+                display: none; 
+            }
+            .team-names-display {
+                font-size: 1.1rem;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+            }
+            .team-score-value {
+                font-size: 1.5rem;
+            }
+            .team-score-name {
+                font-size: 0.7em;
+            }
+            .result-badge {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.6rem;
+            }
+            .scorecard-overlay {
+                font-size: 0.9rem;
+                padding-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .container {
+                padding: 1rem;
+                gap: 1rem;
+                margin: 1rem auto;
+            }
+            
+            .back-btn {
+                position: static;
+                margin-bottom: 1rem;
+                align-self: flex-start;
+                padding: 0.6rem 1rem;
+                font-size: 0.8rem;
+            }
+            .back-btn i {
+                margin-right: 0.5rem;
+            }
+            .page-title {
+                font-size: clamp(1.8rem, 7vw, 2.2rem);
+            }
+            .page-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .section {
+                padding: 1rem;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .section-header h2 {
+                font-size: 1.4rem;
+            }
+            .search-input-wrapper {
+                max-width: 100%; 
+            }
+            .search-input {
+                padding: 0.5rem 2rem 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
+            .search-icon {
+                right: 0.75rem;
+                font-size: 0.85rem;
+            }
+            .stats-cards-grid {
+                grid-template-columns: 1fr; 
+            }
+            .stat-card {
+                padding: 1rem;
+            }
+            .stat-card-info p:last-child {
+                font-size: 2rem;
+            }
+            .stat-card-icon-wrapper {
+                width: 40px; height: 40px;
+                font-size: 1.2rem;
+            }
+            .match-summary-card {
+                padding: 0.8rem;
+                align-items: center;
+            }
+            .teams-date-section,
+            .score-section,
+            .result-section {
+                width: 100%;
+                text-align: center;
+            }
+            .team-names-display {
+                font-size: 1rem;
+            }
+            .score-section {
+                flex-direction: column;
+                gap: 0.5rem; 
+            }
+            .score-separator-vertical {
+                display: none; 
+            }
+            .team-score-value {
+                font-size: 1.3rem;
+            }
+            .team-score-name {
+                font-size: 0.7em;
+            }
+            .result-badge {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.5rem;
+            }
+            .scorecard-overlay {
+                font-size: 0.8rem;
+                height: 35%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 0.75rem; }
+            .page-title { font-size: clamp(1.4rem, 6vw, 1.8rem); }
+            .page-subtitle { font-size: 0.75rem; }
+            .back-btn { padding: 0.5rem 0.8rem; font-size: 0.75rem; }
+            .back-btn i { margin-right: 0.25rem; }
+            .section-header h2 { font-size: 1.2rem; }
+            .stat-card { padding: 0.8rem; }
+            .stat-card-info p:last-child { font-size: 1.8rem; }
+            .stat-card-icon-wrapper { width: 35px; height: 35px; font-size: 1rem; }
+            .match-summary-card { padding: 0.6rem; }
+            .team-names-display { font-size: 0.9rem; }
+            .team-score-value { font-size: 1.1rem; }
+            .team-score-name { font-size: 0.6em; }
+            .match-date-display { font-size: 0.7em; }
+            .result-badge {
+                font-size: 0.65rem;
+                padding: 0.25rem 0.4rem;
+            }
+            .scorecard-overlay {
+                font-size: 0.7rem;
+                height: 30%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-effects">
+        <div class="floating-orb orb-1"></div>
+        <div class="floating-orb orb-2"></div>
+        <div class="floating-orb orb-3"></div>
+        <div class="grid-bg"></div>
+    </div>
+
+    <a href="/user/dashboard" class="back-btn interactive">
+        <i class="fas fa-arrow-left"></i> <span>Back to Dashboard</span>
+    </a>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="page-title">
+                <i class="fas fa-chart-bar"></i> Match Summaries
+            </h1>
+            <p class="page-subtitle">Comprehensive overview of all cricket matches with detailed scores and results.</p>
+        </header>
+
+        <section class="section stats-cards-grid">
+            <div class="stat-card">
+                <div class="stat-card-info">
+                    <p>Total Matches</p>
+                    <p>{{ summaries|length }}</p>
+                </div>
+                <div class="stat-card-icon-wrapper">
+                    <i class="fas fa-baseball-ball"></i>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-info">
+                    <p>Current Year</p>
+                    <p>2026</p>
+                </div>
+                <div class="stat-card-icon-wrapper">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+            </div>
+        </section>
+
+        <section class="section summaries-list-section">
+            <div class="section-header">
+                <h2><i class="fas fa-list-alt"></i> Recent Matches</h2>
+                <div class="search-input-wrapper">
+                    <input type="text" id="searchInput" placeholder="Search matches..." class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+            </div>
+
+            {% if summaries %}
+                <div class="match-summary-card-wrapper" id="matchRows">
+                    {% for row in summaries %}
+                        {% set team1_score_class = '' %}
+                        {% set team2_score_class = '' %}
+                        {% if row.team1_score is not none and row.team2_score is not none %}
+                            {% if row.team1_score > row.team2_score %}
+                                {% set team1_score_class = 'winner' %}
+                            {% elif row.team2_score > row.team1_score %}
+                                {% set team2_score_class = 'winner' %}
+                            {% endif %}
+                        {% endif %}
+                        <a href="/user/view_match_scorecard?match_id={{ row.match_id }}" class="match-summary-card interactive">
+                            <div class="match-summary-inner-grid">
+                                <div class="teams-date-section">
+                                    <h3 class="team-names-display">
+                                        {{ row.match.team1.team_name if row.match and row.match.team1 else '' }}
+                                        <span class="vs-separator">VS</span>
+                                        {{ row.match.team2.team_name if row.match and row.match.team2 else '' }}
+                                    </h3>
+                                    <p class="match-date-display">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        {{ row.match.match_date.strftime('%b %d, %Y') if row.match and row.match.match_date else '' }}
+                                    </p>
+                                </div>
+
+                                <div class="score-section">
+                                    <div class="team-score-group team1">
+                                        <span class="team-score-value {{ team1_score_class }}">{{ row.team1_score }}/{{ row.team1_wickets }}</span>
+                                        <span class="team-score-name">{{ row.match.team1.team_name if row.match and row.match.team1 else '' }}</span>
+                                    </div>
+                                    <div class="score-separator-vertical"></div>
+                                    <div class="team-score-group team2">
+                                        <span class="team-score-value {{ team2_score_class }}">{{ row.team2_score }}/{{ row.team2_wickets }}</span>
+                                        <span class="team-score-name">{{ row.match.team2.team_name if row.match and row.match.team2 else '' }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="result-section">
+                                    <div class="result-badge">
+                                        <i class="fas fa-trophy"></i>
+                                        {{ row.result }}
+                                    </div>
+                                    <div class="scorecard-overlay">
+                                        View Scorecard <i class="fas fa-arrow-right"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else: %}
+                <div class="empty-state">
+                    <i class="fas fa-file-alt empty-icon"></i>
+                    <h3 class="empty-title">No Match Summaries Found</h3>
+                    <p class="empty-description">It looks like there are no match summaries recorded yet. Please check back later!</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <footer>
+        <div class="glass-effect">
+            <p>
+                <i class="fas fa-heart"></i>
+                &copy; 2026 Cricket Management System - Made with passion for cricket
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = 100 + Math.random() * 10 + 'vh'; 
+            particle.style.width = particle.style.height = Math.random() * 4 + 2 + 'px';
+            
+            const colors = ['#a8edea', '#fed6e3', '#d299c2', '#fef9d7', '#87CEEB', '#ADD8E6'];
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            particle.style.borderRadius = '50%';
+            document.body.appendChild(particle);
+
+            const duration = Math.random() * 8 + 10;
+            const endY = -100 - Math.random() * 50;
+            const endX = Math.random() * 20 - 10;
+            
+            particle.style.setProperty('--end-y', `${endY}vh`);
+            particle.style.setProperty('--end-x', `${endX}vw`);
+            particle.style.animationDuration = `${duration}s`;
+            
+            setTimeout(() => {
+                particle.remove();
+            }, duration * 1000);
+        }
+
+        if (!document.getElementById('particle-animations-style')) {
+            const style = document.createElement('style');
+            style.id = 'particle-animations-style';
+            style.textContent = `
+                @keyframes particle-float {
+                    from { transform: translateY(0) translateX(0); opacity: 0; }
+                    20% { opacity: 0.7; }
+                    80% { opacity: 0.7; }
+                    to { transform: translateY(var(--end-y)) translateX(var(--end-x)); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        setInterval(createParticle, 1000);
+
+        function createRipple(event) {
+            const element = event.currentTarget;
+            const ripple = document.createElement('span');
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height) * 0.8; 
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            ripple.classList.add('ripple');
+            
+            const existingRipple = element.querySelector('.ripple');
+            if (existingRipple) {
+                existingRipple.remove(); 
+            }
+            element.appendChild(ripple);
+
+            ripple.addEventListener('animationend', () => {
+                ripple.remove();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const matchRowsContainer = document.getElementById('matchRows'); 
+            const matchSummaryCards = matchRowsContainer ? matchRowsContainer.querySelectorAll('.match-summary-card') : [];
+            const noSummariesMessage = document.querySelector('.empty-state'); 
+
+            searchInput.addEventListener('input', function () {
+                const term = this.value.toLowerCase().trim();
+                let resultsFound = false;
+
+                if (noSummariesMessage) {
+                    noSummariesMessage.style.display = 'none';
+                }
+
+                matchSummaryCards.forEach(card => {
+                    const team1Name = card.querySelector('.team-names-display').childNodes[0].textContent.toLowerCase().trim();
+                    const team2Name = card.querySelector('.team-names-display').childNodes[2].textContent.toLowerCase().trim();
+                    const resultText = card.querySelector('.result-badge').textContent.toLowerCase().trim();
+                    const dateText = card.querySelector('.match-date-display').textContent.toLowerCase().trim();
+
+                    if (team1Name.includes(term) || team2Name.includes(term) || resultText.includes(term) || dateText.includes(term)) {
+                        card.style.display = 'flex';
+                        resultsFound = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (noSummariesMessage) {
+                    if (!resultsFound) {
+                        noSummariesMessage.style.display = 'block';
+                    }
+                }
+            });
+
+            document.querySelectorAll('.back-btn, .match-summary-card').forEach(element => { 
+                element.classList.add('interactive'); 
+                element.addEventListener('click', createRipple);
+            });
+
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100 + 200);
+            });
+
+            if (matchSummaryCards.length > 0) {
+                matchSummaryCards.forEach((card, index) => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.6s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, (statCards.length * 100) + (index * 100) + 200); 
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Elite Cricket Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* --- Root Variables for Theming --- */
+        :root {
+            --primary-dark-blue: #1A2E40; /* Very dark blue for background base */
+            --secondary-dark-purple: #2D2A4A; /* Dark purple for complementary background */
+            --accent-gold: #FFD700; /* Gold for highlights, buttons */
+            --accent-green: #3D9970; /* Green for success/positive elements */
+            --text-light: #F0F2F5; /* Light text for readability */
+            --text-muted: #B0B7C6; /* Muted text for descriptions */
+            --card-bg: rgba(255, 255, 255, 0.08); /* Transparent white for glass effect */
+            --card-border: rgba(255, 255, 255, 0.15); /* Subtle border for cards */
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            --shadow-medium: rgba(0, 0, 0, 0.4);
+            --gradient-1: linear-gradient(135deg, #667eea, #764ba2); /* Original dashboard gradient */
+            --gradient-2: linear-gradient(135deg, #10b981, #059669); /* Green for 'Manage Players' */
+            --gradient-3: linear-gradient(135deg, #3b82f6, #2563eb); /* Blue for 'Manage Teams' */
+            --gradient-4: linear-gradient(135deg, #f59e0b, #d97706); /* Orange for 'Manage Matches' */
+            --gradient-5: linear-gradient(135deg, #ef4444, #dc2626); /* Red for 'Manage Venues' */
+            --gradient-6: linear-gradient(135deg, #a855f7, #9333ea); /* Purple for 'Manage Scorecards' */
+            --gradient-7: linear-gradient(135deg, #06b6d4, #22d3ee); /* Cyan for 'Match Summaries' */
+            --logout-gradient: linear-gradient(135deg, #ff6b6b, #ee5a24); /* Red-orange for logout */
+        }
+
+        /* --- Global Reset & Base Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--primary-dark-blue);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Align content to the top */
+            padding: 40px 20px; /* Overall page padding */
+            color: var(--text-light);
+        }
+
+        /* --- Animated Background Elements (Subtle Glows & Particles) --- */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            opacity: 0.1;
+            filter: blur(100px); /* Stronger blur for soft glow */
+            z-index: 0;
+            animation: background-glow 20s infinite ease-in-out alternate;
+        }
+
+        body::before {
+            width: 600px; height: 600px;
+            background: linear-gradient(135deg, #8a2be2, #007bff); /* Blue/Purple glow */
+            top: -150px; left: -150px;
+        }
+
+        body::after {
+            width: 700px; height: 700px;
+            background: linear-gradient(135deg, #FFD700, #ff9800); /* Gold glow */
+            bottom: -200px; right: -200px;
+            animation-delay: 5s; /* Stagger animation */
+        }
+
+        @keyframes background-glow {
+            0% { transform: scale(1) translateY(0); opacity: 0.1; }
+            50% { transform: scale(1.05) translateY(-20px); opacity: 0.2; }
+            100% { transform: scale(1) translateY(0); opacity: 0.1; }
+        }
+
+        /* Animated grid/particles overlay */
+        .animated-grid-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px; /* Adjust grid density */
+            z-index: 0;
+            opacity: 0.8;
+            pointer-events: none;
+            animation: grid-pan 60s linear infinite;
+        }
+
+        @keyframes grid-pan {
+            from { background-position: 0 0; }
+            to { background-position: 50px 50px; } /* Same as background-size to loop */
+        }
+
+        /* --- Logout Button --- */
+        .logout {
+            position: fixed; /* Keep it fixed so it stays in place on scroll */
+            top: 25px;
+            left: 25px; /* Moved to top left */
+            background: var(--logout-gradient);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(238, 90, 36, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000; /* Ensure it's on top of everything */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(238, 90, 36, 0.4);
+            background: linear-gradient(135deg, #ee5a24, #ff6b6b); /* Reversed for dynamic hover */
+        }
+
+        /* --- Main Container & Card --- */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            width: 100%;
+            padding: 40px; /* Increased internal padding */
+            min-height: calc(100vh - 80px); /* Fill remaining viewport height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically in the container */
+            align-items: center;
+        }
+
+        .dashboard-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(25px); /* Stronger blur for glass effect */
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 30px;
+            padding: 50px 40px; /* More generous padding */
+            text-align: center;
+            box-shadow: 
+                0 25px 50px var(--shadow-medium),
+                0 0 0 1px var(--card-border); /* Subtle internal border for clarity */
+            border: 1px solid var(--card-border);
+            animation: fadeInScaleUp 0.8s ease-out forwards; /* Entry animation for the card */
+            width: 100%; /* Ensure it fills container width */
+        }
+
+        @keyframes fadeInScaleUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* --- Header Section --- */
+        .header {
+            margin-bottom: 50px; /* More space below header */
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.8rem, 5vw, 4.5rem); /* Larger and more responsive title */
+            background: linear-gradient(135deg, #a8edea, #fed6e3, #ffd19a); /* Vibrant tri-color gradient */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            margin-bottom: 15px; /* Space from subtitle */
+            letter-spacing: -0.03em; /* Tighter letter spacing */
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.15), 0 0 40px rgba(255, 255, 255, 0.05); /* Enhanced text glow */
+            display: flex; /* For icon alignment */
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header h1 i {
+            font-size: 0.8em; /* Slightly smaller icon relative to text */
+            color: var(--accent-gold); /* Ensure icon color stands out */
+        }
+
+        .header .subtitle {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        /* --- Navigation Grid --- */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Adaptive columns */
+            gap: 30px; /* More generous gap */
+            width: 100%;
+        }
+
+        .nav-item {
+            position: relative;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05); /* Even more subtle background for items */
+            border-radius: 20px;
+            padding: 30px 25px; /* More padding for a premium feel */
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother, bouncier transition */
+            box-shadow: 
+                0 8px 30px var(--shadow-light),
+                0 0 0 1px rgba(255, 255, 255, 0.05); /* Very subtle outer border */
+            border: 1px solid var(--card-border);
+            overflow: hidden; /* For pseudo-element effects */
+            display: flex; /* For content alignment */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            animation: fadeInUp 0.7s ease forwards; /* Staggered fade in */
+            opacity: 0;
+        }
+
+        /* Staggered animation delays for nav items */
+        .nav-item:nth-child(1) { animation-delay: 0.1s; }
+        .nav-item:nth-child(2) { animation-delay: 0.2s; }
+        .nav-item:nth-child(3) { animation-delay: 0.3s; }
+        .nav-item:nth-child(4) { animation-delay: 0.4s; }
+        .nav-item:nth-child(5) { animation-delay: 0.5s; }
+        .nav-item:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px; /* Thicker top accent bar */
+            background: linear-gradient(90deg, var(--item-color), var(--item-color-light));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .nav-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .nav-item:hover {
+            transform: translateY(-12px); /* More pronounced lift */
+            box-shadow: 
+                0 18px 40px var(--shadow-medium), /* Stronger shadow on hover */
+                0 0 0 1px var(--accent-gold); /* Accent border on hover */
+            background: rgba(255, 255, 255, 0.12); /* Brighter background on hover */
+        }
+        
+        .nav-item .icon {
+            font-size: 2.5rem; /* Larger icons */
+            margin-bottom: 15px; /* More space below icon */
+            color: var(--item-color);
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover .icon {
+            transform: scale(1.15); /* More pronounced icon scale */
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3)); /* Enhanced shadow for icon */
+        }
+
+        .nav-item .title {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-light);
+            font-size: 1.3rem; /* Larger title */
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .nav-item .description {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Specific color scheme for each nav item */
+        .nav-item:nth-child(1) { --item-color: #3b82f6; --item-color-light: #60a5fa; } /* Players (Blue) */
+        .nav-item:nth-child(2) { --item-color: #10b981; --item-color-light: #34d399; } /* Teams (Green) */
+        .nav-item:nth-child(3) { --item-color: #f59e0b; --item-color-light: #fbbf24; } /* Matches (Orange) */
+        .nav-item:nth-child(4) { --item-color: #ef4444; --item-color-light: #f87171; } /* Venues (Red) */
+        .nav-item:nth-child(5) { --item-color: #8b5cf6; --item-color-light: #a78bfa; } /* Scorecards (Purple) */
+        .nav-item:nth-child(6) { --item-color: #06b6d4; --item-color-light: #22d3ee; } /* Summaries (Cyan) */
+
+        /* --- Responsive Design --- */
+        @media (max-width: 1024px) {
+            .nav-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 25px;
+            }
+            .dashboard-card {
+                padding: 40px 30px;
+            }
+            .header h1 {
+                font-size: clamp(2.5rem, 4.5vw, 4rem);
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+            .logout {
+                top: 15px; left: 15px;
+                padding: 10px 16px;
+                font-size: 0.8rem;
+                gap: 5px;
+            }
+            .logout i {
+                font-size: 0.9em;
+            }
+
+            .container {
+                padding: 20px 0;
+            }
+
+            .dashboard-card {
+                padding: 30px 20px;
+                border-radius: 20px;
+            }
+
+            .header {
+                margin-bottom: 40px;
+            }
+            .header h1 {
+                font-size: clamp(2rem, 8vw, 3.5rem);
+                gap: 10px;
+            }
+            .header .subtitle {
+                font-size: 1rem;
+            }
+
+            .nav-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .nav-item {
+                padding: 25px 20px;
+            }
+
+            .nav-item .icon {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+
+            .nav-item .title {
+                font-size: 1.2rem;
+            }
+
+            .nav-item .description {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .dashboard-card {
+                padding: 25px 15px;
+            }
+            .header h1 {
+                font-size: clamp(1.8rem, 10vw, 3rem);
+            }
+            .header .subtitle {
+                font-size: 0.9rem;
+            }
+            .nav-item .icon {
+                font-size: 1.8rem;
+            }
+            .nav-item .title {
+                font-size: 1.1rem;
+            }
+            .nav-item .description {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-grid-overlay"></div>
+
+    <a href="/admin/logout" class="logout">
+        <i class="fas fa-arrow-left"></i>
+        Logout
+    </a>
+    
+    <div class="container">
+        <div class="dashboard-card">
+            <div class="header">
+                <h1><i class="fas fa-user-shield"></i> Admin Dashboard</h1>
+                <p class="subtitle">Welcome to the Cricket Management System</p>
+            </div>
+            
+            <div class="nav-grid">
+                <a href="/admin/manage_players" class="nav-item">
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="title">Manage Players</div>
+                    <div class="description">Add, edit, and manage player profiles</div>
+                </a>
+                
+                <a href="/admin/manage_teams" class="nav-item">
+                    <div class="icon">
+                        <i class="fas fa-people-group"></i>
+                    </div>
+                    <div class="title">Manage Teams</div>
+                    <div class="description">Create, assign, and organize cricket teams.</div>
+                </a>
+                
+                <a href="/admin/manage_matches" class="nav-item">
+                    <div class="icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="title">Schedule Matches</div>
+                    <div class="description">Schedule and oversee match details.</div>
+                </a>
+                
+                <a href="/admin/manage_venues" class="nav-item">
+                    <div class="icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="title">Manage Venues</div>
+                    <div class="description">Add and manage cricket grounds</div>
+                </a>
+                
+                <a href="/admin/manage_scorecards" class="nav-item">
+                    <div class="icon">
+                        <i class="fas fa-list-ol"></i>
+                    </div>
+                    <div class="title">Manage Scorecards</div>
+                    <div class="description">Add and Update Player Match Data</div>
+                </a>
+                
+                <a href="/admin/match_summaries" class="nav-item">
+                    <div class="icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="title">Match Summaries</div>
+                    <div class="description">Add, edit, and Manage Match Summaries</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add ripple effect to nav items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height) * 2;
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = `${size}px`;
+                    ripple.style.height = `${size}px`;
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    
+                    this.appendChild(ripple);
+                    
+                    ripple.addEventListener('animationend', () => {
+                        ripple.remove();
+                    });
+                });
+            });
+
+            if (!document.querySelector('style#ripple-animation-style')) {
+                const style = document.createElement('style');
+                style.id = 'ripple-animation-style';
+                style.textContent = `
+                    .ripple {
+                        position: absolute;
+                        border-radius: 50%;
+                        background: rgba(255, 255, 255, 0.3);
+                        transform: scale(0);
+                        animation: ripple-effect 0.6s ease-out forwards;
+                        pointer-events: none;
+                        z-index: 10;
+                    }
+
+                    @keyframes ripple-effect {
+                        to {
+                            transform: scale(1);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        });
+    </script>
+</body>
+</html>

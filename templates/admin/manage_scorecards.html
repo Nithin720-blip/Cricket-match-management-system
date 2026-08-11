@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Scorecards | Elite Cricket Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #4a4e69;
+            --secondary-green: #6d6875;
+            --accent-gold: #fb8500;
+            --background-dark: #1a1a2e;
+            --form-bg: rgba(255, 255, 255, 0.05);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --text-light: #e0e0e0;
+            --text-muted: #b0b0b0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --table-header-bg: rgba(255, 255, 255, 0.08);
+            --table-row-hover: rgba(255, 255, 255, 0.05);
+            --action-delete: #d9534f;
+            --button-primary-bg: linear-gradient(90deg, #2ecc71, #27ae60);
+            --button-primary-hover: linear-gradient(90deg, #27ae60, #2ecc71);
+            --button-edit-bg: linear-gradient(90deg, #007bff, #0056b3);
+            --button-edit-hover: linear-gradient(90deg, #0056b3, #007bff);
+
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            --shadow-strong: rgba(0, 0, 0, 0.4);
+
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #fb8500;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, var(--background-dark) 0%, #0e0e1a 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px var(--shadow-strong);
+            margin-bottom: 40px;
+        }
+
+        .main-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            position: relative;
+            width: 100%;
+        }
+
+        .back-button-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .back-link {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-light);
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px var(--shadow-light);
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--shadow-strong);
+        }
+
+        .back-link i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover i {
+            transform: translateX(-3px);
+        }
+
+        .main-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #a8edea, #fed6e3, #ffd19a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 0;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .card {
+            background: var(--form-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 15px var(--shadow-light);
+            padding: 25px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px var(--shadow-strong);
+        }
+
+        .card h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(251, 133, 0, 0.5);
+            display: inline-block;
+            text-align: center;
+            width: auto;
+        }
+
+        .add-entry-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 1em;
+            color: var(--text-light);
+            background-color: var(--input-bg);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(251, 133, 0, 0.3);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-control option {
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            padding: 5px 10px;
+        }
+
+        .form-label {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            transition: all 0.3s ease;
+            background: transparent;
+            padding: 0;
+            z-index: 1;
+        }
+
+        .form-group select {
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23e0e0e0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 35px;
+        }
+
+        .form-control:not(:placeholder-shown) + .form-label,
+        .form-control:focus + .form-label,
+        .form-control:valid + .form-label,
+        .form-control.filled + .form-label {
+            top: -10px;
+            font-size: 0.75em;
+            color: var(--accent-gold);
+            background: var(--form-bg);
+            padding: 0 5px;
+            left: 10px;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .form-group .error-message {
+            color: var(--warning-color);
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            width: 100%;
+            text-align: left;
+            padding-left: 10px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .form-group.has-error .error-message {
+            display: block;
+        }
+        .form-group.has-error .form-control {
+            border-color: var(--error-color) !important;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .btn i {
+            font-size: 1.1em;
+        }
+
+        .btn-primary {
+            background: var(--button-primary-bg);
+            color: white;
+            grid-column: span 1;
+        }
+        .add-entry-form button[type="submit"] {
+            grid-column: 1 / -1;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background: var(--button-primary-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-danger {
+            background-color: var(--action-delete);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-edit {
+            background: var(--button-edit-bg);
+            color: white;
+        }
+        .btn-edit:hover {
+            background: var(--button-edit-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            background: var(--form-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px var(--shadow-light);
+            min-width: 700px;
+        }
+
+        .data-table thead {
+            background-color: var(--primary-blue);
+            color: var(--text-light);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .data-table th {
+            font-weight: 600;
+            font-size: 1.05em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: var(--primary-blue);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .data-table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 0 2px var(--accent-gold);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table .actions {
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: flex-start;
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 30px;
+            font-size: 1.1em;
+            color: var(--text-muted);
+            background-color: var(--form-bg);
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: fadeInDown 0.5s ease-out forwards;
+        }
+
+        .message.success {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .message.error {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group.hidden-field {
+            display: none;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .search-input-wrapper {
+            position: relative;
+            max-width: 300px;
+            width: 100%;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 35px 10px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--text-light);
+            font-family: inherit;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                padding: 25px;
+            }
+            .main-header h1 {
+                font-size: 3rem;
+            }
+            .card h2 {
+                font-size: 2rem;
+            }
+            .data-table th, .data-table td {
+                padding: 12px 15px;
+                font-size: 0.95em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+            .container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+            .main-header h1 {
+                font-size: 2.5rem;
+            }
+            .back-button-container {
+                position: static;
+                margin-bottom: 20px;
+                display: block;
+                text-align: left;
+            }
+            .back-link {
+                width: auto;
+                font-size: 0.85rem;
+                padding: 8px 15px;
+            }
+            .card {
+                padding: 20px;
+            }
+            .card h2 {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+            .add-entry-form {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .btn {
+                padding: 12px 20px;
+                font-size: 1.1rem;
+            }
+
+            .data-table,
+            .data-table thead,
+            .data-table tbody,
+            .data-table th,
+            .data-table td,
+            .data-table tr {
+                display: block;
+            }
+
+            .data-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            .data-table tr {
+                border: 1px solid var(--border-color);
+                margin-bottom: 15px;
+                border-radius: 8px;
+                background-color: var(--form-bg);
+            }
+
+            .data-table td {
+                border-bottom: 1px solid var(--border-color);
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+
+            .data-table td:last-child {
+                border-bottom: none;
+            }
+
+            td[data-label]::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 15px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: 600;
+                color: var(--text-light);
+            }
+            td[data-label="ID"]::before { content: "ID"; }
+            td[data-label="Player"]::before { content: "Player"; }
+            td[data-label="Role"]::before { content: "Role"; }
+            td[data-label="Match ID"]::before { content: "Match ID"; }
+            td[data-label="Match"]::before { content: "Match"; }
+            td[data-label="Runs Scored"]::before { content: "Runs Scored"; }
+            td[data-label="Wickets Taken"]::before { content: "Wickets Taken"; }
+            td[data-label="Runs Conceded"]::before { content: "Runs Conceded"; }
+            td[data-label="Balls Faced (Batting)"]::before { content: "Balls Faced (Batting)"; }
+            td[data-label="Balls Bowled (Bowling)"]::before { content: "Balls Bowled (Bowling)"; }
+            td[data-label="Action"]::before { content: "Action"; }
+
+            .data-table .actions {
+                text-align: center;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <div class="back-button-container">
+                <a href="/admin/dashboard" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            <h1>Manage Scorecards</h1>
+        </header>
+
+        {% if message %}
+            <div class="message {{ message.type }}" id="notification">
+                {{ message.text }}
+            </div>
+            <script>
+                setTimeout(() => {
+                    const notification = document.getElementById('notification');
+                    if (notification) {
+                        notification.style.opacity = '0';
+                        notification.style.transform = 'translateY(-20px)';
+                        setTimeout(() => notification.remove(), 500);
+                    }
+                }, 5000);
+            </script>
+        {% endif %}
+
+        <section class="card add-scorecard-section">
+            <h2>{% if edit_scorecard_data %}Edit Scorecard Entry{% else %}Add Scorecard Entry{% endif %}</h2>
+            <form method="POST" action="/admin/manage_scorecards" class="add-entry-form" id="scorecardForm">
+                <input type="hidden" name="submit_form" value="1">
+                {% if edit_scorecard_data %}
+                    <input type="hidden" name="scorecard_id" value="{{ edit_scorecard_data.scorecard_id }}">
+                {% endif %}
+
+                <div class="form-group">
+                    <select name="match_id" id="match_id" class="form-control" required>
+                        <option value="" disabled {% if not edit_scorecard_data %}selected{% endif %}>Select Match</option>
+                        {% for match in matches %}
+                            <option value="{{ match.match_id }}" {% if edit_scorecard_data and edit_scorecard_data.match_id == match.match_id %}selected{% endif %}>
+                                Match #{{ match.match_id }} ({{ match.team1.team_name if match.team1 else '' }} vs {{ match.team2.team_name if match.team2 else '' }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="match_id" class="form-label">Match</label>
+                    <div class="error-message" id="match_id_error"></div>
+                </div>
+
+                <div class="form-group">
+                    <select name="player_id" id="player_id" class="form-control" required>
+                        <option value="" disabled selected>Select Player</option>
+                    </select>
+                    <label for="player_id" class="form-label">Player</label>
+                    <div class="error-message" id="player_id_error"></div>
+                </div>
+
+                <div class="form-group" id="runs_group">
+                    <input type="number" name="runs" id="runs" placeholder=" " min="0" class="form-control" value="{% if edit_scorecard_data %}{{ edit_scorecard_data.runs }}{% endif %}">
+                    <label for="runs" class="form-label">Runs Scored</label>
+                    <div class="error-message" id="runs_error"></div>
+                </div>
+
+                <div class="form-group" id="wickets_group">
+                    <input type="number" name="wickets" id="wickets" placeholder=" " min="0" class="form-control" value="{% if edit_scorecard_data %}{{ edit_scorecard_data.wickets }}{% endif %}">
+                    <label for="wickets" class="form-label">Wickets Taken</label>
+                    <div class="error-message" id="wickets_error"></div>
+                </div>
+
+                <div class="form-group" id="runs_conceded_group">
+                    <input type="number" name="runs_conceded" id="runs_conceded" placeholder=" " min="0" class="form-control" value="{% if edit_scorecard_data %}{{ edit_scorecard_data.runs_conceded }}{% endif %}">
+                    <label for="runs_conceded" class="form-label">Runs Conceded</label>
+                    <div class="error-message" id="runs_conceded_error"></div>
+                </div>
+
+                <div class="form-group" id="balls_faced_batting_group">
+                    <input type="number" name="balls_faced_batting" id="balls_faced_batting" placeholder=" " min="0" class="form-control" value="{% if edit_scorecard_data %}{{ edit_scorecard_data.balls_faced_batting }}{% endif %}">
+                    <label for="balls_faced_batting" class="form-label">Balls Faced (Batting)</label>
+                    <div class="error-message" id="balls_faced_batting_error"></div>
+                </div>
+
+                <div class="form-group" id="balls_bowled_bowling_group">
+                    <input type="number" name="balls_bowled_bowling" id="balls_bowled_bowling" placeholder=" " min="0" class="form-control" value="{% if edit_scorecard_data %}{{ edit_scorecard_data.balls_bowled_bowling }}{% endif %}">
+                    <label for="balls_bowled_bowling" class="form-label">Balls Bowled (Bowling)</label>
+                    <div class="error-message" id="balls_bowled_bowling_error"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    {% if edit_scorecard_data %}
+                        <i class="fas fa-edit"></i> Update Entry
+                    {% else %}
+                        <i class="fas fa-plus-circle"></i> Add Entry
+                    {% endif %}
+                </button>
+            </form>
+        </section>
+
+        <section class="card scorecard-list-section">
+            <div class="section-header">
+                <h2>Scorecard List</h2>
+                <div class="search-input-wrapper">
+                    <input type="text" id="searchInput" placeholder="Search entries..." class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+            </div>
+            
+            {% if scorecards %}
+            <div class="table-responsive">
+                <table class="data-table" id="scorecardTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Player</th>
+                            <th>Role</th>
+                            <th>Match ID</th>
+                            <th>Match</th>
+                            <th>Runs Scored</th>
+                            <th>Wickets Taken</th>
+                            <th>Runs Conceded</th>
+                            <th>Balls Faced (Batting)</th>
+                            <th>Balls Bowled (Bowling)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in scorecards %}
+                        <tr data-player="{{ row.player.player_name if row.player else '' }}" data-match-id="{{ row.match_id }}" data-teams="{{ row.match.team1.team_name if row.match and row.match.team1 else '' }} vs {{ row.match.team2.team_name if row.match and row.match.team2 else '' }}" data-role="{{ row.player.role if row.player else '' }}">
+                            <td data-label="ID">{{ row.scorecard_id }}</td>
+                            <td data-label="Player">{{ row.player.player_name if row.player else '' }}</td>
+                            <td data-label="Role">{{ row.player.role if row.player else '' }}</td>
+                            <td data-label="Match ID">{{ row.match_id }}</td>
+                            <td data-label="Match">{{ row.match.team1.team_name if row.match and row.match.team1 else '' }} vs {{ row.match.team2.team_name if row.match and row.match.team2 else '' }}</td>
+                            <td data-label="Runs Scored">{{ row.runs }}</td>
+                            <td data-label="Wickets Taken">{{ row.wickets }}</td>
+                            <td data-label="Runs Conceded">{{ row.runs_conceded }}</td>
+                            <td data-label="Balls Faced (Batting)">{{ row.balls_faced_batting }}</td>
+                            <td data-label="Balls Bowled (Bowling)">{{ row.balls_bowled_bowling }}</td>
+                            <td class="actions" data-label="Action">
+                                <a href="/admin/manage_scorecards?edit={{ row.scorecard_id }}" class="btn btn-edit btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="/admin/manage_scorecards?delete={{ row.scorecard_id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this scorecard entry? This action cannot be undone.')">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="no-data-message" id="noResultsMessage">No scorecard entries yet. Add a new one!</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const matchSelect = document.getElementById('match_id');
+            const playerSelect = document.getElementById('player_id');
+            const runsGroup = document.getElementById('runs_group');
+            const wicketsGroup = document.getElementById('wickets_group');
+            const runsConcededGroup = document.getElementById('runs_conceded_group');
+            const ballsFacedBattingGroup = document.getElementById('balls_faced_batting_group');
+            const ballsBowledBowlingGroup = document.getElementById('balls_bowled_bowling_group');
+
+            const runsInput = document.getElementById('runs');
+            const wicketsInput = document.getElementById('wickets');
+            const runsConcededInput = document.getElementById('runs_conceded');
+            const ballsFacedBattingInput = document.getElementById('balls_faced_batting');
+            const ballsBowledBowlingInput = document.getElementById('balls_bowled_bowling');
+            const form = document.getElementById('scorecardForm');
+
+            const editMode = {% if edit_scorecard_data %}true{% else %}false{% endif %};
+            const preselectedPlayerId = {% if edit_scorecard_data %}{{ edit_scorecard_data.player_id }}{% else %}null{% endif %};
+            const preselectedMatchId = {% if edit_scorecard_data %}{{ edit_scorecard_data.match_id }}{% else %}null{% endif %};
+
+            let allPlayersData = {};
+
+            function showError(element, message) {
+                const formGroup = element.closest('.form-group');
+                const errorDiv = formGroup.querySelector('.error-message');
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    formGroup.classList.add('has-error');
+                }
+            }
+
+            function clearError(element) {
+                const formGroup = element.closest('.form-group');
+                formGroup.classList.remove('has-error');
+                const errorDiv = formGroup.querySelector('.error-message');
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                }
+            }
+
+            function validateField(element) {
+                let isValid = true;
+                const value = element.value; 
+                const id = element.id;
+                const formGroup = element.closest('.form-group');
+
+                clearError(element); 
+
+                if (formGroup.classList.contains('hidden-field')) {
+                    if (element.type === 'number') {
+                        element.value = '';
+                    } else if (element.tagName === 'SELECT') {
+                         element.value = '';
+                         const defaultOption = element.querySelector('option[value=""][disabled]');
+                         if (defaultOption) {
+                             defaultOption.selected = true;
+                         }
+                    }
+                    element.classList.remove('filled');
+                    return true;
+                }
+
+                if (element.hasAttribute('required') && (value === '' || value === '0')) {
+                    if (element.tagName === 'SELECT' && (value === '' || element.selectedOptions[0].disabled)) {
+                        isValid = false;
+                        showError(element, 'Please select an option.');
+                    } else if (element.type === 'number' && value === '') { 
+                        isValid = false;
+                        showError(element, 'This field is required.');
+                    }
+                } else if (element.type === 'number') {
+                    if (value !== '' && (isNaN(value) || parseFloat(value) < 0)) {
+                        isValid = false;
+                        showError(element, 'Please enter a non-negative number.');
+                    }
+                }
+                
+                if (id === 'player_id' && matchSelect.value !== '' && (value === '' || value === '0')) {
+                     isValid = false;
+                     showError(element, 'Please select a player for the chosen match.');
+                }
+
+                if (element.tagName === 'SELECT' && (value === '' || element.selectedOptions[0].disabled)) {
+                     element.classList.remove('filled');
+                } else if (element.value !== '' && element.value !== '0') { 
+                    element.classList.add('filled');
+                } else {
+                    element.classList.remove('filled');
+                }
+
+                return isValid;
+            }
+
+            function updateFormFieldsByRole(role) {
+                runsGroup.classList.add('hidden-field');
+                wicketsGroup.classList.add('hidden-field');
+                runsConcededGroup.classList.add('hidden-field');
+                ballsFacedBattingGroup.classList.add('hidden-field');
+                ballsBowledBowlingGroup.classList.add('hidden-field');
+
+                runsInput.removeAttribute('required');
+                wicketsInput.removeAttribute('required');
+                runsConcededInput.removeAttribute('required');
+                ballsFacedBattingInput.removeAttribute('required');
+                ballsBowledBowlingInput.removeAttribute('required');
+
+                const isPreselectedPlayerForEdit = editMode && (playerSelect.value == preselectedPlayerId);
+
+                if (!isPreselectedPlayerForEdit) {
+                    runsInput.value = '';
+                    wicketsInput.value = '';
+                    runsConcededInput.value = '';
+                    ballsFacedBattingInput.value = '';
+                    ballsBowledBowlingInput.value = '';
+                }
+
+                clearError(runsInput);
+                clearError(wicketsInput);
+                clearError(runsConcededInput);
+                clearError(ballsFacedBattingInput);
+                clearError(ballsBowledBowlingInput);
+
+                switch (role) {
+                    case 'Batsman':
+                    case 'Wicketkeeper':
+                        runsGroup.classList.remove('hidden-field');
+                        ballsFacedBattingGroup.classList.remove('hidden-field');
+                        runsInput.setAttribute('required', 'required');
+                        ballsFacedBattingInput.setAttribute('required', 'required');
+                        break;
+                    case 'Bowler':
+                        wicketsGroup.classList.remove('hidden-field');
+                        runsConcededGroup.classList.remove('hidden-field');
+                        ballsBowledBowlingGroup.classList.remove('hidden-field');
+                        wicketsInput.setAttribute('required', 'required');
+                        runsConcededInput.setAttribute('required', 'required');
+                        ballsBowledBowlingInput.setAttribute('required', 'required');
+                        break;
+                    case 'All-Rounder':
+                        runsGroup.classList.remove('hidden-field');
+                        wicketsGroup.classList.remove('hidden-field');
+                        runsConcededGroup.classList.remove('hidden-field');
+                        ballsFacedBattingGroup.classList.remove('hidden-field');
+                        ballsBowledBowlingGroup.classList.remove('hidden-field');
+                        runsInput.setAttribute('required', 'required');
+                        wicketsInput.setAttribute('required', 'required');
+                        runsConcededInput.setAttribute('required', 'required');
+                        ballsFacedBattingInput.setAttribute('required', 'required');
+                        ballsBowledBowlingInput.setAttribute('required', 'required');
+                        break;
+                }
+
+                form.querySelectorAll('.form-group .form-control').forEach(input => {
+                    validateField(input);
+                });
+            }
+
+            function loadPlayersForMatch(matchId, selectedPlayerId = null) {
+                playerSelect.innerHTML = '<option value="" disabled selected>Select Player</option>';
+                playerSelect.disabled = true;
+                updateFormFieldsByRole(null);
+
+                if (!matchId || matchId === '0') { 
+                    return; 
+                }
+
+                playerSelect.innerHTML = '<option value="" disabled>Loading players...</option>';
+                
+                fetch(`/admin/get_players_by_match?match_id=${matchId}`)
+                    .then(response => response.json())
+                    .then(players => {
+                        allPlayersData = {};
+                        playerSelect.innerHTML = '<option value="" disabled selected>Select Player</option>';
+
+                        if (players.length > 0) {
+                            players.forEach(player => {
+                                allPlayersData[player.player_id] = player.role; 
+                                const option = document.createElement('option');
+                                option.value = player.player_id;
+                                option.textContent = player.player_name + ' (' + player.role + ')';
+                                
+                                if (selectedPlayerId !== null && player.player_id == selectedPlayerId) {
+                                    option.selected = true;
+                                }
+                                playerSelect.appendChild(option);
+                            });
+                            playerSelect.disabled = false;
+                            
+                            if (playerSelect.value) {
+                                updateFormFieldsByRole(allPlayersData[playerSelect.value]);
+                            }
+                        } else {
+                            playerSelect.innerHTML = '<option value="" disabled selected>No players found for this match</option>';
+                            playerSelect.disabled = true;
+                            updateFormFieldsByRole(null);
+                        }
+                    })
+                    .catch(error => {
+                        playerSelect.innerHTML = '<option value="" disabled selected>Error loading players</option>';
+                        playerSelect.disabled = true;
+                        updateFormFieldsByRole(null);
+                    });
+            }
+
+            matchSelect.addEventListener('change', function() {
+                loadPlayersForMatch(this.value);
+            });
+
+            playerSelect.addEventListener('change', function() {
+                updateFormFieldsByRole(allPlayersData[this.value]);
+            });
+
+            if (editMode && preselectedMatchId !== null) { 
+                loadPlayersForMatch(preselectedMatchId, preselectedPlayerId);
+            } else if (matchSelect.value && matchSelect.value !== "") {
+                loadPlayersForMatch(matchSelect.value);
+            } else {
+                playerSelect.disabled = true;
+                updateFormFieldsByRole(null);
+            }
+
+            form.addEventListener('input', function(event) {
+                if (event.target.matches('input[type="number"]')) {
+                    validateField(event.target);
+                }
+            });
+            form.addEventListener('change', function(event) {
+                if (event.target.matches('select')) {
+                    validateField(event.target);
+                }
+            });
+            form.addEventListener('blur', function(event) {
+                if (event.target.matches('input[type="number"], select')) {
+                    validateField(event.target);
+                }
+            }, true);
+
+            form.addEventListener('submit', function(event) {
+                let formIsValid = true;
+                form.querySelectorAll('.form-group:not(.hidden-field) .form-control').forEach(input => {
+                    if (!validateField(input)) {
+                        formIsValid = false;
+                    }
+                });
+
+                if (!formIsValid) {
+                    event.preventDefault();
+                    const firstErrorField = document.querySelector('.form-group.has-error .form-control');
+                    if (firstErrorField) {
+                        firstErrorField.focus();
+                        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+
+            const searchInput = document.getElementById('searchInput');
+            const scorecardTable = document.getElementById('scorecardTable');
+            const tableBody = scorecardTable ? scorecardTable.querySelector('tbody') : null;
+            const tableRows = tableBody ? Array.from(tableBody.querySelectorAll('tr')) : [];
+            const noResultsMessage = document.getElementById('noResultsMessage');
+
+            if (searchInput && tableBody) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase().trim();
+                    let rowsVisible = 0;
+
+                    tableRows.forEach(row => {
+                        const rowData = (row.dataset.player + ' ' + row.dataset.matchId + ' ' + row.dataset.teams + ' ' + (row.dataset.role || '')).toLowerCase();
+
+                        if (rowData.includes(searchTerm)) {
+                            row.style.display = '';
+                            rowsVisible++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    if (noResultsMessage) {
+                        if (rowsVisible > 0) {
+                            noResultsMessage.style.display = 'none';
+                        } else {
+                            noResultsMessage.style.display = 'block';
+                            noResultsMessage.textContent = 'No scorecard entries found matching your search.';
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

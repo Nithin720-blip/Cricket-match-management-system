@@ -1,0 +1,45 @@
+/* Reset and base styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: hsl(108, 68%, 34%);
+}
+
+/* Center content */
+.container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Heading style */
+h1 {
+    font-size: 2em;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+/* Button container */
+.buttons {
+    display: flex;
+    gap: 20px;
+}
+
+/* Button style */
+.btn {
+    padding: 12px 24px;
+    background-color: #007BFF;
+    color: rgba(255, 255, 255, 0.267);
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #0009b3;
+}
